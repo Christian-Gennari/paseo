@@ -103,8 +103,9 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     gap: theme.spacing[1],
     paddingHorizontal: theme.spacing[2],
-    borderRadius: theme.borderRadius["2xl"],
+    borderRadius: theme.borderRadius.sm,
     backgroundColor: "transparent",
+    transition: "background-color 0.15s ease-in-out",
   },
   toolbarIconOnly: {
     width: 28,
@@ -156,10 +157,10 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: theme.fontWeight.normal,
   },
   hovered: {
-    backgroundColor: theme.colors.surface2,
+    backgroundColor: "rgba(255, 255, 255, 0.08)",
   },
   pressed: {
-    backgroundColor: theme.colors.surface0,
+    backgroundColor: "rgba(255, 255, 255, 0.12)",
   },
   disabled: {
     opacity: 0.5,
