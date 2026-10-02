@@ -1,4 +1,3 @@
-import { stat } from "node:fs/promises";
 import { join } from "node:path";
 import type { Logger } from "pino";
 
@@ -10,6 +9,7 @@ import {
   listLocalSpeechModels,
 } from "./providers/local/models.js";
 import { initializeLocalSpeechServices } from "./providers/local/runtime.js";
+import { isUsableLocalModelFile } from "./providers/local/sherpa/onnx-file-check.js";
 import {
   getOpenAiSpeechAvailability,
   initializeOpenAiSpeechServices,
@@ -76,18 +76,6 @@ function resolveRequestedSpeechProviders(
   };
 }
 
-async function hasRequiredLocalModelFile(filePath: string): Promise<boolean> {
-  try {
-    const fileStat = await stat(filePath);
-    if (fileStat.isDirectory()) {
-      return true;
-    }
-    return fileStat.isFile() && fileStat.size > 0;
-  } catch {
-    return false;
-  }
-}
-
 async function findMissingRequiredLocalModels(params: {
   modelsDir: string | null;
   requiredModelIds: LocalSpeechModelId[];
@@ -106,7 +94,7 @@ async function findMissingRequiredLocalModels(params: {
       if (!spec) return { modelId, missing: true };
       const modelDir = getLocalSpeechModelDir(modelsDir, modelId);
       const filePresence = await Promise.all(
-        spec.requiredFiles.map((relPath) => hasRequiredLocalModelFile(join(modelDir, relPath))),
+        spec.requiredFiles.map((relPath) => isUsableLocalModelFile(join(modelDir, relPath))),
       );
       return { modelId, missing: !filePresence.every((present) => present) };
     }),

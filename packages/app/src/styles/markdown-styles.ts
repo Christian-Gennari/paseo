@@ -218,31 +218,28 @@ export function createMarkdownStyles(theme: Theme) {
     // =========================================================================
 
     table: {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: theme.borderRadius.md,
+      borderWidth: 0,
       marginVertical: theme.spacing[3],
     },
 
-    thead: {
-      backgroundColor: theme.colors.surface2,
-    },
+    thead: {},
 
     tbody: {},
 
     th: {
       ...webSelectableTextStyle,
-      padding: theme.spacing[2],
-      borderBottomWidth: 1,
-      borderRightWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface2,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      borderWidth: 0,
+      fontFamily: theme.fontFamily.ui,
       fontWeight: theme.fontWeight.semibold,
       color: theme.colors.foreground,
       fontSize: theme.fontSize.content,
       textAlign: "left" as const,
     },
 
+    // Rows carry the only rule in the table: a hairline under each row, header
+    // included. Cells have no vertical borders.
     tr: {
       borderBottomWidth: 1,
       borderColor: theme.colors.border,
@@ -251,9 +248,10 @@ export function createMarkdownStyles(theme: Theme) {
 
     td: {
       ...webSelectableTextStyle,
-      padding: theme.spacing[2],
-      borderRightWidth: 1,
-      borderColor: theme.colors.border,
+      paddingVertical: theme.spacing[2],
+      paddingHorizontal: theme.spacing[3],
+      borderWidth: 0,
+      fontFamily: theme.fontFamily.ui,
       color: theme.colors.foreground,
       fontSize: theme.fontSize.content,
       flex: 1,

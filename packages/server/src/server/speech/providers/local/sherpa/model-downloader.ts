@@ -6,6 +6,7 @@ import { pipeline } from "node:stream/promises";
 import type pino from "pino";
 
 import { getSherpaOnnxModelSpec, type SherpaOnnxModelId } from "./model-catalog.js";
+import { isUsableLocalModelFile } from "./onnx-file-check.js";
 import { spawnProcess } from "../../../../../utils/spawn.js";
 
 export interface EnsureSherpaOnnxModelOptions {
@@ -22,18 +23,7 @@ export function getSherpaOnnxModelDir(modelsDir: string, modelId: SherpaOnnxMode
 
 async function hasRequiredFiles(modelDir: string, requiredFiles: string[]): Promise<boolean> {
   const results = await Promise.all(
-    requiredFiles.map(async (rel) => {
-      const abs = path.join(modelDir, rel);
-      try {
-        const s = await stat(abs);
-        if (s.isDirectory()) {
-          return true;
-        }
-        return s.isFile() && s.size > 0;
-      } catch {
-        return false;
-      }
-    }),
+    requiredFiles.map((rel) => isUsableLocalModelFile(path.join(modelDir, rel))),
   );
   return results.every((present) => present);
 }
