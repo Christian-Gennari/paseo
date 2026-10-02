@@ -354,15 +354,23 @@
       padding-top: 4px;
     }
 
+    /* Model selector in Claude: transparent, clean text, no orange pill */
     .model-badge {
-      font-size: 12px;
-      color: var(--text-muted);
+      font-size: 13.5px;
+      color: #d4d1cb;
       display: flex;
       align-items: center;
       gap: 6px;
+      font-weight: 500;
+      cursor: pointer;
     }
 
-    /* Claude Send Button: Rounded Square (Squircle) */
+    .model-badge .model-thinking {
+      color: var(--text-muted);
+      font-weight: normal;
+    }
+
+    /* Claude Send Button: ONLY the main action button is terracotta */
     .btn-send {
       background-color: #c96442;
       border: none;
@@ -471,8 +479,8 @@
         <input placeholder="Reply to Claude..." autofocus />
         <div class="composer-toolbar">
           <div class="model-badge">
-            <span style="color: var(--accent-terracotta);">✳</span>
-            <span>GPT-6.1-Sol · Nostos (Core App)</span>
+            <span>GPT-6.1-Sol</span>
+            <span class="model-thinking">Medium</span>
           </div>
           <button class="btn-send" aria-label="Send">
             <svg viewBox="0 0 24 24">
