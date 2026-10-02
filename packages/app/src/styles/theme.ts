@@ -539,7 +539,7 @@ const midnightDarkColors = buildDarkSemanticColors({
 });
 
 // Claude — exact Claude.ai dark mode replica.
-// Background: #151515, primary chat text: #C7C5C3, warm-stone elevation scale.
+// Background: #151515, primary chat text: #DAD8D5 (calibrated warm off-white, legible without pure white glare).
 const claudeDarkColors = buildDarkSemanticColors({
   surface0: "#151515",
   surface1: "#1f1f1e",
@@ -553,9 +553,9 @@ const claudeDarkColors = buildDarkSemanticColors({
   surfaceComposer: "#1e1e1e",
   borderComposer: "#303030",
   surfaceCode: "#111111",
-  foreground: "#C7C5C3",
-  foregroundMuted: "#8e8b87",
-  foregroundExtraMuted: "#63605c",
+  foreground: "#DAD8D5",
+  foregroundMuted: "#9e9b97",
+  foregroundExtraMuted: "#706d69",
   border: "#242424",
   borderAccent: "#303030",
   accent: "#c96442",
