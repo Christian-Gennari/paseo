@@ -4,6 +4,8 @@ import { StyleSheet } from "react-native-unistyles";
 import { isNative, isWeb } from "@/constants/platform";
 import { MarkdownTextSpan } from "@/components/markdown-text";
 import { MarkdownLinkText } from "@/components/markdown/link-text";
+import { matchReferenceBadge } from "@/components/markdown/reference-badge";
+import { MarkdownReferenceBadge } from "@/components/markdown/reference-badge-view";
 import { AssistantLinkPressProvider, type AssistantLinkPress } from "./link-press-context";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CODE_SURFACE_DATASET } from "@/styles/code-surface";
@@ -43,6 +45,14 @@ export function AssistantMarkdownLink({
     [onPress],
   );
   const unwrapForMarkdownCopy = source.sourceType === "inline-code" || source.markup === "linkify";
+
+  const badge = useMemo(
+    () => matchReferenceBadge(source.href, source.text ?? ""),
+    [source.href, source.text],
+  );
+  if (badge) {
+    return <MarkdownReferenceBadge kind={badge.kind} label={badge.label} onPress={onPress} />;
+  }
 
   if (isNative) {
     // Must be a MarkdownTextSpan, not a plain <Text>: on iOS the link renders
