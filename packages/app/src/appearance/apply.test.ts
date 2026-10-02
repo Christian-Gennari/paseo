@@ -24,7 +24,7 @@ type ThemeUpdater = (theme: FakeTheme) => FakeTheme;
 // fake of this shape through `unknown` to ThemeUpdater's param is test-only.
 interface FakeTheme {
   colorScheme: "light" | "dark";
-  fontFamily: { ui: string; mono: string };
+  fontFamily: { ui: string; mono: string; prose: string };
   fontSize: {
     code: number;
     content: number;
@@ -44,7 +44,7 @@ interface FakeTheme {
 function makeFakeTheme(): FakeTheme {
   return {
     colorScheme: "dark",
-    fontFamily: { ui: "seed-ui-stack", mono: "seed-mono-stack" },
+    fontFamily: { ui: "seed-ui-stack", mono: "seed-mono-stack", prose: "seed-prose-stack" },
     fontSize: {
       code: 12,
       content: 15,
@@ -57,7 +57,7 @@ function makeFakeTheme(): FakeTheme {
       "4xl": 26,
     },
     lineHeight: { diff: 22 },
-    contentMaxWidth: 820,
+    contentMaxWidth: 780,
     colors: { foreground: "#fff", syntax: {} },
   };
 }
@@ -69,7 +69,7 @@ function makeInput(overrides: Partial<AppearanceInput> = {}): AppearanceInput {
     uiBaseFontSize: 14,
     contentFontSize: 15,
     codeFontSize: 12,
-    contentMaxWidth: 820,
+    contentMaxWidth: 780,
     syntaxTheme: "one",
     ...overrides,
   };
@@ -115,6 +115,12 @@ describe("applyAppearance", () => {
     applyAppearance(makeInput({ uiFontFamily: "" }));
 
     expect(runCapturedUpdater().fontFamily.ui).toBe(DEFAULT_UI_FONT_STACK);
+  });
+
+  it("keeps the prose font family when patching the UI and mono families", () => {
+    applyAppearance(makeInput({ uiFontFamily: "Menlo" }));
+
+    expect(runCapturedUpdater().fontFamily.prose).toBe("seed-prose-stack");
   });
 
   it("passes a non-empty UI font family through trimmed", () => {

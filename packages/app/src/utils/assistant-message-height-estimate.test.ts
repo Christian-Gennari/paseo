@@ -19,12 +19,12 @@ describe("assistant message height estimate", () => {
   it("estimates assistant message height from measured markdown block heights", () => {
     setAssistantMarkdownBlockHeight({
       block: "First paragraph",
-      width: 804,
+      width: DEFAULT_CONTENT_MAX_WIDTH - 16,
       height: 18.2,
     });
     setAssistantMarkdownBlockHeight({
       block: "Second paragraph",
-      width: 804,
+      width: DEFAULT_CONTENT_MAX_WIDTH - 16,
       height: 41.1,
     });
 

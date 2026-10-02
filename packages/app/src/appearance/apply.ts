@@ -74,7 +74,7 @@ export function applyAppearance(input: AppearanceInput): void {
 
   for (const key of themeKeys) {
     UnistylesRuntime.updateTheme(key, (t) => {
-      const fontFamily = { ui, mono };
+      const fontFamily = { ...t.fontFamily, ui, mono };
       const fontSize = scaleFontSize(
         input.uiBaseFontSize,
         input.contentFontSize,

@@ -1917,10 +1917,10 @@ const styles = StyleSheet.create((theme: Theme) => ({
     flexShrink: 1,
     flexDirection: "column",
     gap: theme.spacing[3],
-    backgroundColor: theme.colors.surface1,
+    backgroundColor: theme.colors.surfaceComposer,
     borderWidth: theme.borderWidth[1],
-    borderColor: "#3a3b3d",
-    borderRadius: 14,
+    borderColor: theme.colors.borderComposer,
+    borderRadius: theme.borderRadius["2xl"],
     paddingVertical: {
       xs: theme.spacing[2],
       md: theme.spacing[4],
@@ -2028,7 +2028,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
   sendButton: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.accent,
     alignItems: "center",
     justifyContent: "center",
@@ -2038,7 +2038,7 @@ const styles = StyleSheet.create((theme: Theme) => ({
     width: "auto",
     minWidth: 32,
     paddingHorizontal: theme.spacing[3],
-    borderRadius: 8,
+    borderRadius: theme.borderRadius.lg,
   },
   sendButtonLabel: {
     fontSize: theme.fontSize.base,

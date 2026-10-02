@@ -29,7 +29,11 @@ import { MarkdownTableCellText } from "@/components/markdown-text-selection";
 import { getMarkdownListMarker, getMarkdownListSpacing } from "@/utils/markdown-list";
 import { markdownNodeContainsType } from "@/utils/markdown-ast";
 import { createMarkdownParser } from "@/utils/markdown-parser";
-import { createCompactMarkdownStyles, createMarkdownStyles } from "@/styles/markdown-styles";
+import {
+  createCompactMarkdownStyles,
+  createMarkdownStyles,
+  createProseMarkdownStyles,
+} from "@/styles/markdown-styles";
 import type { Theme } from "@/styles/theme";
 import { openExternalUrl } from "@/utils/open-external-url";
 import { isNative } from "@/constants/platform";
@@ -47,7 +51,10 @@ export type MarkdownStyles = Record<string, TextStyle & ViewStyle & { [key: stri
 
 interface MarkdownWithStableRendererProps {
   children: ReactNode;
-  style: ReturnType<typeof createMarkdownStyles> | ReturnType<typeof createCompactMarkdownStyles>;
+  style:
+    | ReturnType<typeof createMarkdownStyles>
+    | ReturnType<typeof createCompactMarkdownStyles>
+    | ReturnType<typeof createProseMarkdownStyles>;
   rules?: RenderRules;
   markdownit?: ReturnType<typeof MarkdownIt>;
   onLinkPress?: (url: string) => boolean;
@@ -66,6 +73,15 @@ function compactMarkdownStyleMapping(theme: Theme): Partial<MarkdownWithStableRe
   return { style: createCompactMarkdownStyles(theme) };
 }
 
+function proseMarkdownStyleMapping(theme: Theme): Partial<MarkdownWithStableRendererProps> {
+  return { style: createProseMarkdownStyles(theme) };
+}
+
+function resolveMarkdownStyleMapping(input: { compact?: boolean; prose?: boolean }) {
+  if (input.compact) return compactMarkdownStyleMapping;
+  return input.prose ? proseMarkdownStyleMapping : markdownStyleMapping;
+}
+
 // Serves PR comment bodies and the markdown file preview; agent chat passes its
 // own parser. The preview has to show the bytes on disk, so no typographer.
 const defaultMarkdownParser = createMarkdownParser({ linkify: true });
@@ -74,6 +90,9 @@ const MARKDOWN_LIST_ITEM_CONTENT_FLEX: ViewStyle = { flex: 1, flexShrink: 1, min
 export interface MarkdownRendererProps {
   text: string;
   compact?: boolean;
+  // Serif reading face for assistant narrative. On web the subtree also has to sit
+  // under PROSE_SURFACE_DATASET, or the app-wide interface-font rule overrides it.
+  prose?: boolean;
   rules?: RenderRules;
   markdownit?: ReturnType<typeof MarkdownIt>;
   onLinkPress?: (url: string) => boolean;
@@ -85,6 +104,7 @@ export interface MarkdownRendererProps {
 export function MarkdownRenderer({
   text,
   compact = false,
+  prose = false,
   rules,
   markdownit = defaultMarkdownParser,
   onLinkPress,
@@ -100,6 +120,7 @@ export function MarkdownRenderer({
   const rendererProps = useMemo(
     () => ({
       compact,
+      prose,
       rules: markdownRules,
       markdownit,
       onLinkPress,
@@ -109,6 +130,7 @@ export function MarkdownRenderer({
     [
       allowedImageHandlers,
       compact,
+      prose,
       markdownRules,
       markdownit,
       onLinkPress,
@@ -175,13 +197,14 @@ function MarkdownPart({
 function MarkdownFragment({
   text,
   compact,
+  prose,
   rules,
   markdownit,
   onLinkPress,
   allowedImageHandlers,
   topLevelMaxExceededItem,
 }: MarkdownRendererProps & { rules: RenderRules }) {
-  const uniProps = compact ? compactMarkdownStyleMapping : markdownStyleMapping;
+  const uniProps = resolveMarkdownStyleMapping({ compact, prose });
   return (
     <ThemedMarkdown
       uniProps={uniProps}

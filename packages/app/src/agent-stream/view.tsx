@@ -26,7 +26,7 @@ import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { useIsCompactFormFactor } from "@/constants/layout";
 import { useMutation } from "@tanstack/react-query";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
-import { Check, ChevronDown, X } from "lucide-react-native";
+import { ArrowDown, Check, X } from "lucide-react-native";
 import { buildWorkspaceTabPersistenceKey } from "@/workspace-tabs/model";
 import { openExplorerSidebarView } from "@/workspace-tabs/explorer-sidebar";
 import {
@@ -1146,9 +1146,10 @@ const AgentStreamViewComponent = forwardRef<AgentStreamViewHandle, AgentStreamVi
                     onPress={scrollToBottom}
                     accessibilityRole="button"
                     accessibilityLabel={t("agentStream.scrollToBottom")}
+                    hitSlop={8}
                     testID="scroll-to-bottom-button"
                   >
-                    <ChevronDown size={24} color={stylesheet.scrollToBottomIcon.color} />
+                    <ArrowDown size={18} color={stylesheet.scrollToBottomIcon.color} />
                   </Pressable>
                 </Animated.View>
               </View>
@@ -1688,13 +1689,15 @@ const stylesheet = StyleSheet.create((theme) => ({
     alignItems: "center",
   },
   scrollToBottomButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: theme.colors.surface2,
+    width: 36,
+    height: 36,
+    borderRadius: theme.borderRadius.full,
+    backgroundColor: theme.colors.surface1,
+    borderWidth: theme.borderWidth[1],
+    borderColor: theme.colors.borderAccent,
     alignItems: "center",
     justifyContent: "center",
-    ...theme.shadow.sm,
+    ...theme.shadow.md,
   },
   scrollToBottomIcon: {
     color: theme.colors.foreground,

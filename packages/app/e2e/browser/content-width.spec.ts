@@ -30,12 +30,12 @@ test("widens chat and Markdown files to the chosen content width and resets to t
 
     await test.step("chat starts at the default width", async () => {
       await openAgentRoute(page, agent);
-      await expectContentColumnWidth(assistantMessage, { max: 820 });
+      await expectContentColumnWidth(assistantMessage, { max: 780 });
     });
 
     await test.step("settings show the default without a reset", async () => {
       await openAppearanceSettings(page);
-      await expectDefaultContentWidthSetting(page, 820);
+      await expectDefaultContentWidthSetting(page, 780);
     });
 
     await test.step("a custom width is saved and offers a reset", async () => {
@@ -58,10 +58,10 @@ test("widens chat and Markdown files to the chosen content width and resets to t
     await test.step("reset returns to the default without storing it", async () => {
       await openAppearanceSettings(page);
       await resetContentWidth(page);
-      await expectDefaultContentWidthSetting(page, 820);
+      await expectDefaultContentWidthSetting(page, 780);
 
       await openAgentRoute(page, agent);
-      await expectContentColumnWidth(assistantMessage, { max: 820 });
+      await expectContentColumnWidth(assistantMessage, { max: 780 });
       await page.screenshot({ path: testInfo.outputPath("chat-default-width.png") });
     });
   } finally {

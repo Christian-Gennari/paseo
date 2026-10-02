@@ -1,5 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, View, type StyleProp, type TextStyle, type ViewStyle } from "react-native";
+import {
+  Pressable,
+  Text,
+  View,
+  type PressableStateCallbackType,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 import { MarkdownTextSpan } from "@/components/markdown-text";
 import * as Clipboard from "expo-clipboard";
@@ -22,6 +30,9 @@ interface HighlightedCodeBlockProps {
   language: string | null | undefined;
   inheritedStyles: TextStyle;
   textStyle: TextStyle;
+  // Labelled fences get a header row naming the language, with the copy button in
+  // it. Without one the copy button floats over the code and shows on hover.
+  showLanguageHeader?: boolean;
 }
 
 // Fence info strings ("```ts", "```typescript", "```ts {1,3}") map to the
@@ -59,11 +70,12 @@ export const HighlightedCodeBlock = React.memo(function HighlightedCodeBlock({
   language,
   inheritedStyles,
   textStyle,
+  showLanguageHeader = false,
 }: HighlightedCodeBlockProps) {
   // Box styles (bg / padding / border / radius / margin) go on the wrapper View
   // so the absolute copy button positions relative to the visible code area,
   // not to a parent that includes the Text's own marginVertical.
-  const { containerStyle, innerTextStyle } = useMemo(
+  const { containerStyle, innerTextStyle, padding } = useMemo(
     () => splitFenceStyle(inheritedStyles, textStyle),
     [inheritedStyles, textStyle],
   );
@@ -87,6 +99,17 @@ export const HighlightedCodeBlock = React.memo(function HighlightedCodeBlock({
   // and ends in more than one when the author left a blank line before the closing
   // fence; pasting any of them into a terminal runs the last line.
   const getCode = useCallback(() => code.replace(TRAILING_CODE_LINE_BREAKS, ""), [code]);
+  const headerLanguage = showLanguageHeader ? language?.trim().split(/\s+/)[0] : null;
+  // The header bleeds through the fence padding to the border. The code stays a
+  // direct child of the fence, which selection copy relies on to find it.
+  const headerStyle = useMemo(
+    () => [
+      headerStyles.header,
+      { marginTop: -padding, marginHorizontal: -padding, marginBottom: padding },
+      { paddingLeft: padding },
+    ],
+    [padding],
+  );
 
   return (
     <View
@@ -95,6 +118,14 @@ export const HighlightedCodeBlock = React.memo(function HighlightedCodeBlock({
       onPointerEnter={handlePointerEnter}
       onPointerLeave={handlePointerLeave}
     >
+      {headerLanguage ? (
+        <View style={headerStyle} dataSet={markdownCopyDataSet.ignore}>
+          <Text style={headerStyles.language} numberOfLines={1}>
+            {headerLanguage}
+          </Text>
+          <CopyButton getCode={getCode} visible placement="header" />
+        </View>
+      ) : null}
       {keyedLines ? (
         <MarkdownTextSpan style={innerTextStyle} copyTag="code">
           {renderCodeSegments(keyedLines)}
@@ -104,7 +135,7 @@ export const HighlightedCodeBlock = React.memo(function HighlightedCodeBlock({
           {renderedCode}
         </MarkdownTextSpan>
       )}
-      <CopyButton getCode={getCode} visible={controlsVisible} />
+      {headerLanguage ? null : <CopyButton getCode={getCode} visible={controlsVisible} />}
     </View>
   );
 });
@@ -146,6 +177,7 @@ const CodeTextSpan = React.memo(function CodeTextSpan({ text }: CodeTextSpanProp
 interface SplitStyles {
   containerStyle: StyleProp<ViewStyle>;
   innerTextStyle: StyleProp<TextStyle>;
+  padding: number;
 }
 
 const CONTAINER_BASE: ViewStyle = { position: "relative" };
@@ -161,17 +193,23 @@ function splitFenceStyle(inheritedStyles: TextStyle, textStyle: TextStyle): Spli
   return {
     containerStyle: [box as ViewStyle, CONTAINER_BASE],
     innerTextStyle: [inheritedStyles, textOnly],
+    padding: typeof box.padding === "number" ? box.padding : 0,
   };
 }
 
 interface CopyButtonProps {
   getCode: () => string;
   visible: boolean;
+  placement?: "floating" | "header";
 }
 
 const COPIED_RESET_MS = 1500;
 
-const CopyButton = React.memo(function CopyButton({ getCode, visible }: CopyButtonProps) {
+const CopyButton = React.memo(function CopyButton({
+  getCode,
+  visible,
+  placement = "floating",
+}: CopyButtonProps) {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const resetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -202,11 +240,18 @@ const CopyButton = React.memo(function CopyButton({ getCode, visible }: CopyButt
     () => [copyButtonStyles.container, visibilityStyle],
     [visibilityStyle],
   );
+  const headerStyle = useCallback(
+    ({ pressed }: PressableStateCallbackType) => [
+      copyButtonStyles.headerContainer,
+      pressed && copyButtonStyles.headerContainerPressed,
+    ],
+    [],
+  );
 
   return (
     <Pressable
       onPress={handlePress}
-      style={wrapperStyle}
+      style={placement === "header" ? headerStyle : wrapperStyle}
       pointerEvents={visible ? "auto" : "none"}
       accessibilityRole="button"
       accessibilityLabel={copied ? t("message.actions.copied") : t("message.actions.copyCode")}
@@ -218,7 +263,7 @@ const CopyButton = React.memo(function CopyButton({ getCode, visible }: CopyButt
           ? copyButtonStyles.iconHoveredColor.color
           : copyButtonStyles.iconColor.color;
         return copied ? (
-          <Check size={14} color={iconColor} />
+          <Check size={14} color={copyButtonStyles.iconCopiedColor.color} />
         ) : (
           <Copy size={14} color={iconColor} />
         );
@@ -234,6 +279,13 @@ const copyButtonStyles = StyleSheet.create((theme) => ({
     right: theme.spacing[2],
     padding: theme.spacing[1],
   },
+  headerContainer: {
+    paddingHorizontal: theme.spacing[2],
+    paddingVertical: theme.spacing[1.5],
+  },
+  headerContainerPressed: {
+    opacity: 0.6,
+  },
   containerVisible: {
     opacity: 1,
   },
@@ -245,5 +297,24 @@ const copyButtonStyles = StyleSheet.create((theme) => ({
   },
   iconHoveredColor: {
     color: theme.colors.foreground,
+  },
+  iconCopiedColor: {
+    color: theme.colors.statusSuccess,
+  },
+}));
+
+const headerStyles = StyleSheet.create((theme) => ({
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderBottomWidth: theme.borderWidth[1],
+    borderBottomColor: theme.colors.border,
+  },
+  language: {
+    flexShrink: 1,
+    color: theme.colors.foregroundMuted,
+    fontFamily: theme.fontFamily.ui,
+    fontSize: theme.fontSize.sm,
   },
 }));

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  darkClaudeTheme,
   darkPureBlackTheme,
   darkTheme,
   FONT_SIZE,
@@ -77,6 +78,35 @@ describe("Sidebar interaction surfaces", () => {
   it("derives Dark hover and selection from the first two raised surfaces", () => {
     expect(darkTheme.colors.surfaceSidebarHover).toBe(darkTheme.colors.surface1);
     expect(darkTheme.colors.surfaceSidebarSelected).toBe(darkTheme.colors.surface2);
+  });
+});
+
+describe("Chat surfaces", () => {
+  it("fall back to the surface scale when a theme does not set them", () => {
+    for (const theme of [darkTheme, lightTheme]) {
+      expect(theme.colors.surfaceUserMessage).toBe(theme.colors.surface3);
+      expect(theme.colors.surfaceComposer).toBe(theme.colors.surface1);
+      expect(theme.colors.borderComposer).toBe(theme.colors.borderAccent);
+      expect(theme.colors.surfaceCode).toBe(theme.colors.surface2);
+    }
+    expect(darkTheme.colors.surfaceWorkspace).toBe(darkTheme.colors.surface1);
+  });
+
+  it("match Claude.ai in the Claude theme", () => {
+    expect(darkClaudeTheme.colors).toMatchObject({
+      surfaceWorkspace: "#1f1f1e",
+      surfaceSidebar: "#1a1918",
+      surface1: "#262523",
+      border: "#2c2a27",
+      surfaceUserMessage: "#2b2b2b",
+      surfaceComposer: "#222325",
+      borderComposer: "#3a3b3d",
+      surfaceCode: "#171716",
+      surfaceCodeInline: "rgba(255, 255, 255, 0.08)",
+      foreground: "#e5e3de",
+      accent: "#c96442",
+      accentForeground: "#ffffff",
+    });
   });
 });
 

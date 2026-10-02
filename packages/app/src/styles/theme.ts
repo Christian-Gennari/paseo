@@ -239,6 +239,10 @@ export interface LightThemeConfig {
   terminalBlack: string;
   terminalBrightBlack: string;
   ring: string;
+  surfaceUserMessage?: string;
+  surfaceComposer?: string;
+  borderComposer?: string;
+  surfaceCode?: string;
 }
 
 const lightTerminalAnsi = {
@@ -270,6 +274,11 @@ export function buildLightSemanticColors(tint: LightThemeConfig) {
     surfaceSidebarHover: tint.surface1,
     surfaceSidebarSelected: tint.surface3,
     surfaceWorkspace: tint.surface0,
+    surfaceUserMessage: tint.surfaceUserMessage ?? tint.surface3,
+    surfaceComposer: tint.surfaceComposer ?? tint.surface1,
+    borderComposer: tint.borderComposer ?? tint.borderAccent,
+    surfaceCode: tint.surfaceCode ?? tint.surface2,
+    surfaceCodeInline: "rgba(0, 0, 0, 0.06)",
     interactionHighlight: "rgba(0, 0, 0, 0.06)",
 
     foreground: tint.foreground,
@@ -368,6 +377,13 @@ export interface DarkThemeConfig {
   terminalBrightBlack: string;
   foreground?: string;
   ring?: string;
+  // Chat-surface overrides. Each falls back to a step of the surface scale, so a
+  // theme only sets one when its chat surfaces sit off that scale.
+  surfaceWorkspace?: string;
+  surfaceUserMessage?: string;
+  surfaceComposer?: string;
+  borderComposer?: string;
+  surfaceCode?: string;
 }
 
 const darkTerminalAnsi = {
@@ -400,7 +416,12 @@ export function buildDarkSemanticColors(tint: DarkThemeConfig) {
     surfaceSidebar: tint.surfaceSidebar,
     surfaceSidebarHover: tint.surface1,
     surfaceSidebarSelected: tint.surface2,
-    surfaceWorkspace: tint.surface1,
+    surfaceWorkspace: tint.surfaceWorkspace ?? tint.surface1,
+    surfaceUserMessage: tint.surfaceUserMessage ?? tint.surface3,
+    surfaceComposer: tint.surfaceComposer ?? tint.surface1,
+    borderComposer: tint.borderComposer ?? tint.borderAccent,
+    surfaceCode: tint.surfaceCode ?? tint.surface2,
+    surfaceCodeInline: "rgba(255, 255, 255, 0.08)",
     interactionHighlight: "rgba(255, 255, 255, 0.08)",
 
     foreground,
@@ -517,7 +538,9 @@ const midnightDarkColors = buildDarkSemanticColors({
   terminalBrightBlack: "#3c3e4c",
 });
 
-// Claude — warm neutral with subtle orange undertone
+// Claude — warm stone surfaces with a terracotta accent, matched to Claude.ai.
+// The chat canvas is the base surface rather than a raised one, and the bubble,
+// composer and code surfaces are Claude.ai's own values, which sit off the scale.
 const claudeDarkColors = buildDarkSemanticColors({
   surface0: "#1f1f1e",
   surface1: "#262523",
@@ -526,12 +549,18 @@ const claudeDarkColors = buildDarkSemanticColors({
   surface4: "#605d5b",
   surfaceDiffEmpty: "#2a2826",
   surfaceSidebar: "#1a1918",
+  surfaceWorkspace: "#1f1f1e",
+  surfaceUserMessage: "#2b2b2b",
+  surfaceComposer: "#222325",
+  borderComposer: "#3a3b3d",
+  surfaceCode: "#171716",
+  foreground: "#e5e3de",
   foregroundMuted: "#ada9a5",
   foregroundExtraMuted: "#78746f",
   border: "#2c2a27",
   borderAccent: "#36332f",
-  accent: "#d97757",
-  accentBright: "#e89a7f",
+  accent: "#c96442",
+  accentBright: "#d97757",
   destructive: "#cf513e", // warm orange-red, hue ~10 — sits with the Claude orange accent
   terminalBlack: "#1a1918",
   terminalBrightBlack: "#4a4745",
@@ -630,20 +659,30 @@ export const OPACITY = {
 // Platform default font stacks — copied verbatim from constants/theme.ts `Fonts`
 // (sans -> ui, mono -> mono). These seed the dynamic `fontFamily` theme token and
 // are the fallback an empty user-supplied family resolves to at apply time.
+//
+// The Anthropic faces are not bundled. They lead the web stacks so a machine that
+// has them installed uses them; everywhere else the stack falls through.
 export const DEFAULT_UI_FONT_STACK: string = Platform.select({
   ios: "system-ui",
   default: "normal",
-  web: "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+  web: "'Anthropic Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
 });
 
 export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
   ios: "ui-monospace",
   default: "monospace",
-  web: "SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+  web: "'Anthropic Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+});
+
+// Assistant prose only. Headings, tables, code and every control stay on `ui`/`mono`.
+export const PROSE_FONT_STACK: string = Platform.select({
+  ios: "Georgia",
+  default: "serif",
+  web: "'Anthropic Serif', 'Tiempos Text', Georgia, 'Times New Roman', serif",
 });
 
 // Chat and markdown content column; the appearance updater patches the user's width in.
-export const DEFAULT_CONTENT_MAX_WIDTH = 820;
+export const DEFAULT_CONTENT_MAX_WIDTH = 780;
 
 // `fontSize`, `fontFamily`, `lineHeight`, and `contentMaxWidth` are deliberately widened to plain
 // `number`/`string` (not narrowed by `as const`) so the appearance updater can patch
@@ -652,7 +691,7 @@ export const DEFAULT_CONTENT_MAX_WIDTH = 820;
 interface CommonTheme {
   spacing: typeof SPACING;
   fontSize: Record<keyof typeof FONT_SIZE, number>;
-  fontFamily: { ui: string; mono: string };
+  fontFamily: { ui: string; mono: string; prose: string };
   lineHeight: Record<keyof typeof LINE_HEIGHT, number>;
   contentMaxWidth: number;
   iconSize: typeof ICON_SIZE;
@@ -665,7 +704,7 @@ interface CommonTheme {
 const commonTheme: CommonTheme = {
   spacing: SPACING,
   fontSize: FONT_SIZE,
-  fontFamily: { ui: DEFAULT_UI_FONT_STACK, mono: DEFAULT_MONO_FONT_STACK },
+  fontFamily: { ui: DEFAULT_UI_FONT_STACK, mono: DEFAULT_MONO_FONT_STACK, prose: PROSE_FONT_STACK },
   lineHeight: LINE_HEIGHT,
   contentMaxWidth: DEFAULT_CONTENT_MAX_WIDTH,
   iconSize: ICON_SIZE,

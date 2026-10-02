@@ -37,6 +37,7 @@ export function MarkdownFenceBlock({
       language={language}
       inheritedStyles={inheritedStyles}
       textStyle={textStyle}
+      showLanguageHeader
     />
   );
 }

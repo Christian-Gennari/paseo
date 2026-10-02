@@ -11,6 +11,20 @@ function contentHeadingLineHeight(contentSize: number, tier: keyof typeof FONT_S
   return Math.round(contentHeadingSize(contentSize, tier) * 1.3);
 }
 
+// Tight tracking for the H1-H4 tier. React Native takes letter-spacing in points,
+// so the em value is resolved against the heading's own size.
+function contentHeadingTracking(contentSize: number, tier: keyof typeof FONT_SIZE): number {
+  return contentHeadingSize(contentSize, tier) * -0.015;
+}
+
+const PROSE_LINE_HEIGHT = 1.62;
+
+// Inline code sits inside prose, so it scales with the content size rather than
+// the code size: 13.5 beside the 15px default. Rounded to the half point.
+function inlineCodeSize(contentSize: number): number {
+  return Math.round(contentSize * 0.9 * 2) / 2;
+}
+
 /**
  * Creates comprehensive markdown styles for react-native-markdown-display.
  *
@@ -71,9 +85,8 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[6],
       marginBottom: theme.spacing[3],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "4xl"),
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
-      paddingBottom: theme.spacing[2],
+      fontFamily: theme.fontFamily.ui,
+      letterSpacing: contentHeadingTracking(theme.fontSize.content, "4xl"),
     },
 
     heading2: {
@@ -84,9 +97,8 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[6],
       marginBottom: theme.spacing[3],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "3xl"),
-      borderBottomWidth: 1,
-      borderBottomColor: theme.colors.border,
-      paddingBottom: theme.spacing[2],
+      fontFamily: theme.fontFamily.ui,
+      letterSpacing: contentHeadingTracking(theme.fontSize.content, "3xl"),
     },
 
     heading3: {
@@ -97,6 +109,8 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[4],
       marginBottom: theme.spacing[2],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "2xl"),
+      fontFamily: theme.fontFamily.ui,
+      letterSpacing: contentHeadingTracking(theme.fontSize.content, "2xl"),
     },
 
     heading4: {
@@ -107,6 +121,8 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[4],
       marginBottom: theme.spacing[2],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "xl"),
+      fontFamily: theme.fontFamily.ui,
+      letterSpacing: contentHeadingTracking(theme.fontSize.content, "xl"),
     },
 
     heading5: {
@@ -117,6 +133,7 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[3],
       marginBottom: theme.spacing[1],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "lg"),
+      fontFamily: theme.fontFamily.ui,
     },
 
     heading6: {
@@ -127,6 +144,7 @@ export function createMarkdownStyles(theme: Theme) {
       marginTop: theme.spacing[3],
       marginBottom: theme.spacing[1],
       lineHeight: contentHeadingLineHeight(theme.fontSize.content, "lg"),
+      fontFamily: theme.fontFamily.ui,
       textTransform: "uppercase" as const,
       letterSpacing: 0.5,
     },
@@ -175,22 +193,22 @@ export function createMarkdownStyles(theme: Theme) {
 
     code_inline: {
       ...webSelectableTextStyle,
-      backgroundColor: theme.colors.surface2,
+      backgroundColor: theme.colors.surfaceCodeInline,
       color: theme.colors.foreground,
-      paddingHorizontal: theme.spacing[1],
-      paddingVertical: 2,
-      borderRadius: theme.borderRadius.md,
+      paddingHorizontal: 5,
+      paddingVertical: 1.5,
+      borderRadius: 5,
       borderWidth: 0,
       fontFamily: theme.fontFamily.mono,
-      fontSize: theme.fontSize.code,
+      fontSize: inlineCodeSize(theme.fontSize.content),
     },
 
     code_block: {
       ...webSelectableTextStyle,
-      backgroundColor: theme.colors.surface2,
+      backgroundColor: theme.colors.surfaceCode,
       color: theme.colors.foreground,
       padding: theme.spacing[3],
-      borderRadius: theme.borderRadius.md,
+      borderRadius: theme.borderRadius.lg,
       fontFamily: theme.fontFamily.mono,
       fontSize: theme.fontSize.code,
       marginVertical: theme.spacing[2],
@@ -198,10 +216,10 @@ export function createMarkdownStyles(theme: Theme) {
 
     fence: {
       ...webSelectableTextStyle,
-      backgroundColor: theme.colors.surface2,
+      backgroundColor: theme.colors.surfaceCode,
       color: theme.colors.foreground,
       padding: theme.spacing[3],
-      borderRadius: theme.borderRadius.md,
+      borderRadius: theme.borderRadius.lg,
       borderWidth: 1,
       borderColor: theme.colors.border,
       fontFamily: theme.fontFamily.mono,
@@ -400,11 +418,6 @@ export function createCompactMarkdownStyles(theme: Theme) {
       marginBottom: theme.spacing[2],
     },
 
-    code_inline: {
-      ...baseStyles.code_inline,
-      fontSize: theme.fontSize.code,
-    },
-
     code_block: {
       ...baseStyles.code_block,
       fontSize: theme.fontSize.code,
@@ -415,6 +428,45 @@ export function createCompactMarkdownStyles(theme: Theme) {
       ...baseStyles.fence,
       fontSize: theme.fontSize.code,
       padding: theme.spacing[2],
+    },
+  };
+}
+
+/**
+ * Assistant narrative: a serif reading face at a looser leading. Only the body
+ * face changes — headings, table cells and code name their own font family, so
+ * they stay sans and mono inside serif prose.
+ */
+export function createProseMarkdownStyles(theme: Theme) {
+  const baseStyles = createMarkdownStyles(theme);
+  const lineHeight = Math.round(theme.fontSize.content * PROSE_LINE_HEIGHT);
+
+  return {
+    ...baseStyles,
+
+    body: {
+      ...baseStyles.body,
+      fontFamily: theme.fontFamily.prose,
+      lineHeight,
+    },
+
+    // Serif faces ship regular and bold; a 500 weight resolves to regular and the
+    // emphasis disappears.
+    strong: {
+      ...baseStyles.strong,
+      fontWeight: theme.fontWeight.semibold,
+    },
+
+    bullet_list_icon: {
+      ...baseStyles.bullet_list_icon,
+      fontFamily: theme.fontFamily.prose,
+      lineHeight,
+    },
+
+    ordered_list_icon: {
+      ...baseStyles.ordered_list_icon,
+      fontFamily: theme.fontFamily.prose,
+      lineHeight,
     },
   };
 }

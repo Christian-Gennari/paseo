@@ -45,6 +45,7 @@ import {
 } from "lucide-react-native";
 import { StyleSheet, withUnistyles } from "react-native-unistyles";
 import { ICON_SIZE, type Theme } from "@/styles/theme";
+import { PROSE_SURFACE_DATASET } from "@/styles/code-surface";
 import { useIsCompactFormFactor } from "@/constants/layout";
 import Animated, {
   Easing,
@@ -346,11 +347,10 @@ const userMessageStylesheet = StyleSheet.create((theme) => ({
     marginBottom: theme.spacing[4],
   },
   bubble: {
-    backgroundColor: theme.colors.surface3,
-    borderRadius: theme.borderRadius["2xl"],
-    borderTopRightRadius: theme.borderRadius.sm,
+    backgroundColor: theme.colors.surfaceUserMessage,
+    borderRadius: 20,
     paddingHorizontal: theme.spacing[4],
-    paddingVertical: theme.spacing[4],
+    paddingVertical: 10,
     minWidth: 0,
     flexShrink: 1,
   },
@@ -422,6 +422,7 @@ function UserMessageImagePill({ image, onOpen, accessibilityLabel }: UserMessage
 }
 
 const MESSAGE_TEXT_DATASET = { messageText: "true" };
+const ASSISTANT_MESSAGE_DATASET = { ...MESSAGE_TEXT_DATASET, ...PROSE_SURFACE_DATASET };
 
 export const UserMessage = memo(function UserMessage({
   serverId,
@@ -809,6 +810,7 @@ export const assistantMessageStylesheet = StyleSheet.create((theme) => ({
   },
   imageErrorText: {
     color: theme.colors.foregroundMuted,
+    fontFamily: theme.fontFamily.ui,
     fontSize: theme.fontSize.base,
     textAlign: "center",
   },
@@ -1405,6 +1407,7 @@ const MemoizedMarkdownBlock = React.memo(function MemoizedMarkdownBlock({
   return (
     <MarkdownRenderer
       text={text}
+      prose
       enableHtmlish={false}
       rules={rules}
       markdownit={parser}
@@ -1978,11 +1981,11 @@ export const AssistantMessage = memo(function AssistantMessage({
     () =>
       isRenderProfileEnabled()
         ? {
-            ...MESSAGE_TEXT_DATASET,
+            ...ASSISTANT_MESSAGE_DATASET,
             revealKey: occurrenceKey,
             revealLength: String(revealedMessage.length),
           }
-        : MESSAGE_TEXT_DATASET,
+        : ASSISTANT_MESSAGE_DATASET,
     [occurrenceKey, revealedMessage.length],
   );
 
