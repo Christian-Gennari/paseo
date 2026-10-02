@@ -46,6 +46,8 @@ import { resolveInlineImageSize, type InlineImageDimensions } from "./inline-ima
 import { groupMarkdownParts, type MarkdownPartGroup } from "./part-groups";
 import { colorMarkdownLinkChildren } from "./link-children";
 import { MarkdownLinkText } from "./link-text";
+import { matchReferenceBadge } from "./reference-badge";
+import { MarkdownReferenceBadge } from "./reference-badge-view";
 
 export type MarkdownStyles = Record<string, TextStyle & ViewStyle & { [key: string]: unknown }>;
 
@@ -472,6 +474,7 @@ interface SharedMarkdownLinkProps {
   href: string;
   inheritedStyles: TextStyle;
   linkStyle: TextStyle;
+  text: string;
   onLinkPress?: (url: string) => boolean;
   children: ReactNode;
 }
@@ -480,6 +483,7 @@ function SharedMarkdownLink({
   href,
   inheritedStyles,
   linkStyle,
+  text,
   onLinkPress,
   children,
 }: SharedMarkdownLinkProps) {
@@ -489,6 +493,11 @@ function SharedMarkdownLink({
     void openExternalUrl(href);
   }, [href, onLinkPress]);
   const style = useMemo(() => [inheritedStyles, linkStyle], [inheritedStyles, linkStyle]);
+
+  const badge = matchReferenceBadge(href, text);
+  if (badge) {
+    return <MarkdownReferenceBadge kind={badge.kind} label={badge.label} onPress={handlePress} />;
+  }
 
   if (!isNative) {
     return (
@@ -508,6 +517,11 @@ function SharedMarkdownLink({
       {children}
     </MarkdownInheritedText>
   );
+}
+
+function getMarkdownNodeText(node: ASTNode): string {
+  if (node.type === "text" || node.type === "code_inline") return node.content ?? "";
+  return (node.children ?? []).map(getMarkdownNodeText).join("");
 }
 
 function getMarkdownLinkHref(node: ASTNode): string {
@@ -732,6 +746,7 @@ export function createSharedMarkdownRules(): RenderRules {
         href={getMarkdownLinkHref(node)}
         inheritedStyles={EMPTY_TEXT_STYLE}
         linkStyle={styles.link}
+        text={getMarkdownNodeText(node)}
         onLinkPress={onLinkPress}
       >
         {colorMarkdownLinkChildren(children, styles.link.color)}
