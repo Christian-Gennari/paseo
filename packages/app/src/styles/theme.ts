@@ -673,11 +673,11 @@ export const DEFAULT_MONO_FONT_STACK: string = Platform.select({
   web: "'Anthropic Mono', SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
 });
 
-// Assistant prose only. Headings, tables, code and every control stay on `ui`/`mono`.
+// Assistant prose only. Claude Code UI uses Anthropic Sans for assistant text.
 export const PROSE_FONT_STACK: string = Platform.select({
-  ios: "Georgia",
-  default: "serif",
-  web: "'Anthropic Serif', 'Tiempos Text', Georgia, 'Times New Roman', serif",
+  ios: "system-ui",
+  default: "normal",
+  web: "'Anthropic Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
 });
 
 // Chat and markdown content column; the appearance updater patches the user's width in.
