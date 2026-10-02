@@ -51,7 +51,14 @@ export function AssistantMarkdownLink({
     [source.href, source.text],
   );
   if (badge) {
-    return <MarkdownReferenceBadge kind={badge.kind} label={badge.label} onPress={onPress} />;
+    return (
+      <MarkdownReferenceBadge
+        kind={badge.kind}
+        label={badge.label}
+        href={source.href}
+        onPress={onPress}
+      />
+    );
   }
 
   if (isNative) {

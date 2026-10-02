@@ -496,7 +496,14 @@ function SharedMarkdownLink({
 
   const badge = matchReferenceBadge(href, text);
   if (badge) {
-    return <MarkdownReferenceBadge kind={badge.kind} label={badge.label} onPress={handlePress} />;
+    return (
+      <MarkdownReferenceBadge
+        kind={badge.kind}
+        label={badge.label}
+        href={href}
+        onPress={handlePress}
+      />
+    );
   }
 
   if (!isNative) {
