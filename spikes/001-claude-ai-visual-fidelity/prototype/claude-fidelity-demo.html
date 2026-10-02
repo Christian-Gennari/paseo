@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Spike 001: Claude.ai Visual & Code Fidelity Demo</title>
+  <style>
+    @font-face {
+      font-family: "Anthropic Sans";
+      src: url("/fonts/AnthropicSans-Roman.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Anthropic Serif";
+      src: url("/fonts/AnthropicSerif-Roman.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: "Anthropic Mono";
+      src: url("/fonts/AnthropicMono-Roman.woff2") format("woff2");
+      font-weight: 100 900;
+      font-style: normal;
+    }
+
+    :root {
+      --bg-canvas: #1f1f1e;
+      --bg-sidebar: #1a1918;
+      --bg-raised: #262523;
+      --bg-user-bubble: #2b2b2b;
+      --text-prose: #e5e3de;
+      --text-heading: #faf9f5;
+      --text-muted: #ada9a5;
+      --border-subtle: #2c2a27;
+      --border-focus: #d97757;
+      --accent-terracotta: #d97757;
+      --code-bg: #171716;
+      --code-header-bg: #22211f;
+      --code-chip-bg: rgba(255, 255, 255, 0.08);
+
+      /* Restrained Claude Syntax Tokens */
+      --syn-keyword: #e07a5f;
+      --syn-string: #99c794;
+      --syn-func: #82aaff;
+      --syn-comment: #7c7975;
+      --syn-number: #f78c6c;
+      --syn-type: #e5c07b;
+      --syn-punct: #b0ada8;
+
+      --font-ui: "Anthropic Sans", system-ui, -apple-system, sans-serif;
+      --font-prose: "Anthropic Serif", Georgia, serif;
+      --font-code: "Anthropic Mono", ui-monospace, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-prose);
+      font-family: var(--font-ui);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: 16px;
+      gap: 12px;
+    }
+
+    .sidebar-header {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-heading);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .project-chip {
+      background-color: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text-prose);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      position: relative;
+    }
+
+    .chat-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 32px 16px 120px 16px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-column {
+      max-width: 780px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    /* User Turn */
+    .turn-user {
+      align-self: flex-end;
+      max-width: 80%;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+
+    .user-bubble {
+      background-color: var(--bg-user-bubble);
+      color: #f3f3f4;
+      font-family: var(--font-ui);
+      font-size: 15.5px;
+      line-height: 1.45;
+      padding: 10px 18px;
+      border-radius: 20px;
+    }
+
+    .timestamp {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* Assistant Turn */
+    .turn-assistant {
+      align-self: flex-start;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Activity Deck */
+    .activity-deck {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 5px 12px;
+      font-size: 12.5px;
+      color: var(--text-muted);
+      width: fit-content;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .activity-deck:hover {
+      background-color: #2c2a28;
+    }
+
+    .activity-deck .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 5px;
+      background-color: var(--accent-terracotta);
+    }
+
+    /* Assistant Prose */
+    .prose {
+      font-family: var(--font-prose);
+      font-size: 16.5px;
+      line-height: 1.62;
+      letter-spacing: -0.005em;
+      color: var(--text-prose);
+    }
+
+    .prose h2 {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      color: var(--text-heading);
+      letter-spacing: -0.015em;
+      font-size: 20px;
+      margin: 20px 0 10px 0;
+    }
+
+    .prose p {
+      margin-bottom: 14px;
+    }
+
+    .code-chip {
+      font-family: var(--font-code);
+      font-size: 13.5px;
+      line-height: 1.35;
+      background-color: var(--code-chip-bg);
+      padding: 1.5px 5.5px;
+      border-radius: 5px;
+      color: #f5f2eb;
+    }
+
+    /* Code Block Chrome & Syntax Highlighting */
+    .code-block {
+      background-color: var(--code-bg);
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .code-header {
+      background-color: var(--code-header-bg);
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: var(--font-ui);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-subtle);
+      user-select: none;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-ui);
+      padding: 3px 6px;
+      border-radius: 4px;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .btn-copy:hover {
+      color: var(--text-heading);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-copy.copied {
+      color: #6cb17b;
+    }
+
+    .code-content {
+      padding: 14px;
+      font-family: var(--font-code);
+      font-size: 13.5px;
+      line-height: 1.5;
+      color: #d4d1cb;
+      overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Syntax Token Classes */
+    .kwd { color: var(--syn-keyword); font-weight: 500; }
+    .str { color: var(--syn-string); }
+    .fn  { color: var(--syn-func); }
+    .cmt { color: var(--syn-comment); font-style: italic; }
+    .num { color: var(--syn-number); }
+    .typ { color: var(--syn-type); }
+    .pct { color: var(--syn-punct); }
+
+    /* Floating Scroll Down Affordance */
+    .scroll-bottom-btn {
+      position: absolute;
+      bottom: 96px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .scroll-bottom-btn:hover {
+      color: var(--text-heading);
+      transform: translateX(-50%) translateY(-2px);
+    }
+
+    /* Floating Composer - Claude Subtle Rounded Card */
+    .composer-wrapper {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      padding: 0 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .composer {
+      width: 100%;
+      max-width: 780px;
+      background-color: #222325;
+      border: 1px solid #3a3b3d;
+      border-radius: 14px;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 16px;
+      gap: 10px;
+      transition: border-color 0.15s ease;
+    }
+
+    /* Claude DOES NOT glow/light-up when focused - it stays calm with just the subtle stroke */
+    .composer:focus-within {
+      border-color: #48494b;
+      box-shadow: none;
+      outline: none;
+    }
+
+    .composer input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-heading);
+      font-family: var(--font-ui);
+      font-size: 15px;
+      width: 100%;
+    }
+
+    .composer-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 4px;
+    }
+
+    .model-badge {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Claude Send Button: Rounded Square (Squircle) */
+    .btn-send {
+      background-color: #c96442;
+      border: none;
+      color: #ffffff;
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .btn-send svg {
+      width: 17px;
+      height: 17px;
+      stroke: #ffffff;
+      fill: none;
+      stroke-width: 2.25;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
+    }
+
+    .btn-send:hover {
+      background-color: #b55737;
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <span>Paseo</span>
+      <span style="font-size: 11px; color: var(--text-muted);">omenhub</span>
+    </div>
+    <div class="project-chip">
+      <span style="color: var(--accent-terracotta);">●</span>
+      <span>Nostos (Core App)</span>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="chat-scroll" id="chatScroll">
+      <div class="chat-column">
+        <!-- Turn 1: User -->
+        <div class="turn-user">
+          <div class="user-bubble">Show me how we should handle auth token refresh in the client.</div>
+          <div class="timestamp">22:45</div>
+        </div>
+
+        <!-- Turn 2: Assistant -->
+        <div class="turn-assistant">
+          <div class="activity-deck">
+            <span class="dot"></span>
+            <span>Inspected <span class="code-chip">src/app/auth/auth.service.ts</span> (120 lines) · 0.8s</span>
+          </div>
+
+          <div class="prose">
+            <p>I inspected the existing authentication service. Below is the refactored token refresh interceptor using Angular's functional interceptor API.</p>
+            
+            <h2>Token Refresh Interceptor</h2>
+            <p>The interceptor catches <span class="code-chip">401 Unauthorized</span> responses, schedules a refresh turn via the BFF gateway, and retries the in-flight request:</p>
+
+            <div class="code-block">
+              <div class="code-header">
+                <span>typescript</span>
+                <button class="btn-copy" onclick="copySnippet(this)">
+                  <span class="copy-icon">⎘</span>
+                  <span class="copy-text">Copy</span>
+                </button>
+              </div>
+              <pre class="code-content"><span class="cmt">// Functional HTTP interceptor for token renewal</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="typ">HttpInterceptorFn</span><span class="pct">,</span> <span class="typ">HttpErrorResponse</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'@angular/common/http'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="fn">inject</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'@angular/core'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="typ">AuthService</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'./auth.service'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="fn">catchError</span><span class="pct">,</span> <span class="fn">switchMap</span><span class="pct">,</span> <span class="fn">throwError</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'rxjs'</span><span class="pct">;</span>
+
+<span class="kwd">export</span> <span class="kwd">const</span> <span class="fn">authInterceptor</span><span class="pct">:</span> <span class="typ">HttpInterceptorFn</span> <span class="pct">=</span> <span class="pct">(</span><span class="kwd">req</span><span class="pct">,</span> <span class="kwd">next</span><span class="pct">)</span> <span class="kwd">=&gt;</span> <span class="pct">{</span>
+  <span class="kwd">const</span> authService <span class="pct">=</span> <span class="fn">inject</span><span class="pct">(</span><span class="typ">AuthService</span><span class="pct">);</span>
+
+  <span class="kwd">return</span> <span class="kwd">next</span><span class="pct">(</span>req<span class="pct">).</span><span class="fn">pipe</span><span class="pct">(</span>
+    <span class="fn">catchError</span><span class="pct">((</span>err<span class="pct">:</span> <span class="typ">HttpErrorResponse</span><span class="pct">)</span> <span class="kwd">=&gt;</span> <span class="pct">{</span>
+      <span class="kwd">if</span> <span class="pct">(</span>err<span class="pct">.</span>status <span class="pct">===</span> <span class="num">401</span><span class="pct">)</span> <span class="pct">{</span>
+        <span class="kwd">return</span> authService<span class="pct">.</span><span class="fn">refreshToken</span><span class="pct">().</span><span class="fn">pipe</span><span class="pct">(</span>
+          <span class="fn">switchMap</span><span class="pct">(()</span> <span class="kwd">=&gt;</span> <span class="kwd">next</span><span class="pct">(</span>req<span class="pct">))</span>
+        <span class="pct">);</span>
+      <span class="pct">}</span>
+      <span class="kwd">return</span> <span class="fn">throwError</span><span class="pct">(()</span> <span class="kwd">=&gt;</span> err<span class="pct">);</span>
+    <span class="pct">})</span>
+  <span class="pct">);</span>
+<span class="pct">};</span></pre>
+            </div>
+
+            <p>Notice how the keywords, types, and strings contrast softly against the dark background without eye strain.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scroll down button -->
+    <div class="scroll-bottom-btn" onclick="scrollToBottom()">↓</div>
+
+    <!-- Floating Composer -->
+    <div class="composer-wrapper">
+      <div class="composer">
+        <input placeholder="Reply to Claude..." autofocus />
+        <div class="composer-toolbar">
+          <div class="model-badge">
+            <span style="color: var(--accent-terracotta);">✳</span>
+            <span>GPT-6.1-Sol · Nostos (Core App)</span>
+          </div>
+          <button class="btn-send" aria-label="Send">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5v15M5.5 11l6.5-6.5 6.5 6.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function copySnippet(button) {
+      const code = button.closest('.code-block').querySelector('.code-content').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const textSpan = button.querySelector('.copy-text');
+        const iconSpan = button.querySelector('.copy-icon');
+        textSpan.innerText = 'Copied';
+        iconSpan.innerText = '✓';
+        button.classList.add('copied');
+        setTimeout(() => {
+          textSpan.innerText = 'Copy';
+          iconSpan.innerText = '⎘';
+          button.classList.remove('copied');
+        }, 1500);
+      });
+    }
+
+    function scrollToBottom() {
+      const el = document.getElementById('chatScroll');
+      el.scrollTop = el.scrollHeight;
+    }
+  </script>
+</body>
+</html>

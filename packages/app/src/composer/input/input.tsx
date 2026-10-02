@@ -1919,8 +1919,8 @@ const styles = StyleSheet.create((theme: Theme) => ({
     gap: theme.spacing[3],
     backgroundColor: theme.colors.surface1,
     borderWidth: theme.borderWidth[1],
-    borderColor: theme.colors.borderAccent,
-    borderRadius: theme.borderRadius["2xl"],
+    borderColor: "#3a3b3d",
+    borderRadius: 14,
     paddingVertical: {
       xs: theme.spacing[2],
       md: theme.spacing[4],
@@ -2026,9 +2026,9 @@ const styles = StyleSheet.create((theme: Theme) => ({
     backgroundColor: theme.colors.destructive,
   },
   sendButton: {
-    width: 28,
-    height: 28,
-    borderRadius: theme.borderRadius.full,
+    width: 32,
+    height: 32,
+    borderRadius: 8,
     backgroundColor: theme.colors.accent,
     alignItems: "center",
     justifyContent: "center",
@@ -2036,9 +2036,9 @@ const styles = StyleSheet.create((theme: Theme) => ({
   },
   sendButtonLabeled: {
     width: "auto",
-    minWidth: 28,
+    minWidth: 32,
     paddingHorizontal: theme.spacing[3],
-    borderRadius: theme.borderRadius.full,
+    borderRadius: 8,
   },
   sendButtonLabel: {
     fontSize: theme.fontSize.base,
