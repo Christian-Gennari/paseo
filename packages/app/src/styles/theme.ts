@@ -538,32 +538,31 @@ const midnightDarkColors = buildDarkSemanticColors({
   terminalBrightBlack: "#3c3e4c",
 });
 
-// Claude — warm stone surfaces with a terracotta accent, matched to Claude.ai.
-// The chat canvas is the base surface rather than a raised one, and the bubble,
-// composer and code surfaces are Claude.ai's own values, which sit off the scale.
+// Claude — exact Claude.ai dark mode replica.
+// Background: #151515, primary chat text: #C7C5C3, warm-stone elevation scale.
 const claudeDarkColors = buildDarkSemanticColors({
-  surface0: "#1f1f1e",
-  surface1: "#262523",
-  surface2: "#2f2d2b",
-  surface3: "#4a4745",
-  surface4: "#605d5b",
-  surfaceDiffEmpty: "#2a2826",
-  surfaceSidebar: "#1a1918",
-  surfaceWorkspace: "#1f1f1e",
-  surfaceUserMessage: "#2b2b2b",
-  surfaceComposer: "#222325",
-  borderComposer: "#3a3b3d",
-  surfaceCode: "#171716",
-  foreground: "#e5e3de",
-  foregroundMuted: "#ada9a5",
-  foregroundExtraMuted: "#78746f",
-  border: "#2c2a27",
-  borderAccent: "#36332f",
+  surface0: "#151515",
+  surface1: "#1f1f1e",
+  surface2: "#262523",
+  surface3: "#302f2d",
+  surface4: "#484644",
+  surfaceDiffEmpty: "#1f1f1e",
+  surfaceSidebar: "#121212",
+  surfaceWorkspace: "#151515",
+  surfaceUserMessage: "#262626",
+  surfaceComposer: "#1e1e1e",
+  borderComposer: "#303030",
+  surfaceCode: "#111111",
+  foreground: "#C7C5C3",
+  foregroundMuted: "#8e8b87",
+  foregroundExtraMuted: "#63605c",
+  border: "#242424",
+  borderAccent: "#303030",
   accent: "#c96442",
   accentBright: "#d97757",
   destructive: "#cf513e", // warm orange-red, hue ~10 — sits with the Claude orange accent
-  terminalBlack: "#1a1918",
-  terminalBrightBlack: "#4a4745",
+  terminalBlack: "#121212",
+  terminalBrightBlack: "#3a3836",
 });
 
 // Ghostty — blue-tinted dark based on Ghostty default background
