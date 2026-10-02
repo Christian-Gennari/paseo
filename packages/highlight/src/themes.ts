@@ -8,6 +8,7 @@ import type { HighlightStyle } from "./types.js";
 // themes (Dracula, Nord) apply their single palette regardless. The code frame
 // — gutter, line numbers, background — follows the app theme, not the palette.
 export type SyntaxThemeId =
+  | "claude"
   | "github"
   | "catppuccin"
   | "dracula"
@@ -18,6 +19,7 @@ export type SyntaxThemeId =
   | "solarized";
 
 export const SYNTAX_THEME_IDS: readonly SyntaxThemeId[] = [
+  "claude",
   "github",
   "catppuccin",
   "dracula",
@@ -34,6 +36,7 @@ export interface SyntaxThemeOption {
 }
 
 export const SYNTAX_THEME_OPTIONS: readonly SyntaxThemeOption[] = [
+  { id: "claude", label: "Claude" },
   { id: "github", label: "GitHub" },
   { id: "catppuccin", label: "Catppuccin" },
   { id: "dracula", label: "Dracula" },
@@ -87,6 +90,55 @@ function expandRolePalette(r: RolePalette): SyntaxColors {
     link: r.string,
   };
 }
+
+// --- Claude (Anthropic CDS code highlighting) -----------------------------
+const claudeLight: RolePalette = {
+  base: "#24292f",
+  keyword: "#c96442",
+  comment: "#6e7781",
+  string: "#388bfd",
+  number: "#b08800",
+  function: "#0550ae",
+  type: "#953800",
+  tag: "#116329",
+  attribute: "#0550ae",
+  operator: "#57606a",
+};
+export const claudeDark: RolePalette = {
+  base: "#d4d1cb",
+  keyword: "#e07a5f", // warm terracotta / salmon keyword
+  comment: "#7c7975", // muted warm gray
+  string: "#7ee787", // clean lime green for JSON/code strings
+  number: "#d19a66", // warm amber/orange for numbers
+  function: "#82aaff", // clean soft blue for functions/properties
+  type: "#e5c07b", // warm gold for types/classes
+  tag: "#e07a5f",
+  attribute: "#82aaff", // soft blue/cyan for JSON keys/properties
+  operator: "#b0ada8",
+};
+
+export const claudeDarkHighlightColors: SyntaxColors = {
+  keyword: "#e07a5f",
+  comment: "#7c7975",
+  string: "#7ee787",
+  number: "#d19a66",
+  literal: "#e07a5f", // booleans and null in terracotta keyword/literal
+  function: "#82aaff",
+  definition: "#82aaff",
+  class: "#e5c07b",
+  type: "#e5c07b",
+  tag: "#e07a5f",
+  attribute: "#82aaff",
+  property: "#82aaff", // JSON keys in clean soft blue/cyan
+  variable: "#d4d1cb",
+  operator: "#b0ada8",
+  punctuation: "#8c8884", // braces, colons, commas in muted slate
+  regexp: "#7ee787",
+  escape: "#d19a66",
+  meta: "#7c7975",
+  heading: "#82aaff",
+  link: "#58a6ff",
+};
 
 // --- Catppuccin (Latte light / Mocha dark) -------------------------------
 const catppuccinLatte: RolePalette = {
@@ -270,6 +322,8 @@ export function resolveSyntaxColors(
 ): SyntaxColors {
   const dark = colorScheme === "dark";
   switch (id) {
+    case "claude":
+      return dark ? claudeDarkHighlightColors : expandRolePalette(claudeLight);
     case "github":
       return dark ? darkHighlightColors : lightHighlightColors;
     case "catppuccin":
