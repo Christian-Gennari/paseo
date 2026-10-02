@@ -316,7 +316,7 @@ function VoiceButtonIcon({
   buttonIconSize: number;
 }) {
   if (isDictating) {
-    return <Square size={buttonIconSize} color="white" fill="white" />;
+    return <Square size={10} color="#C7C5C3" fill="#C7C5C3" />;
   }
   const colorMapping = hovered ? iconForegroundMapping : iconForegroundMutedMapping;
   if (isMutedRealtime) {
@@ -2023,7 +2023,9 @@ const styles = StyleSheet.create((theme: Theme) => ({
     justifyContent: "center",
   },
   voiceButtonRecording: {
-    backgroundColor: theme.colors.destructive,
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#C7C5C3",
   },
   sendButton: {
     width: 32,

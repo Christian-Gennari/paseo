@@ -1099,7 +1099,7 @@ interface ComposerCancelButtonProps {
 }
 
 function ComposerCancelButton({
-  buttonIconSize,
+  buttonIconSize: _buttonIconSize,
   cancelButtonStyle,
   handleCancelAgent,
   isConnected,
@@ -1111,9 +1111,9 @@ function ComposerCancelButton({
     ? t("composer.cancel.cancelingAgent")
     : t("composer.cancel.stopAgent");
   const icon = isCancellingAgent ? (
-    <LoadingSpinner size="small" color="white" />
+    <LoadingSpinner size="small" color="#C7C5C3" />
   ) : (
-    <Square size={buttonIconSize} color="white" fill="white" />
+    <Square size={10} color="#C7C5C3" fill="#C7C5C3" />
   );
   const shortcutNode = agentInterruptKeys ? <Shortcut chord={agentInterruptKeys} /> : null;
   return (
@@ -2549,7 +2549,9 @@ const styles = StyleSheet.create((theme: Theme) => ({
     width: 28,
     height: 28,
     borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.palette.red[600],
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#C7C5C3",
     alignItems: "center",
     justifyContent: "center",
     marginLeft: theme.spacing[1],
