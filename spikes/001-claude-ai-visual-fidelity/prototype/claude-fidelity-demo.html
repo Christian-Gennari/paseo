@@ -374,8 +374,17 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 15px;
       transition: background-color 0.15s ease;
+    }
+
+    .btn-send svg {
+      width: 17px;
+      height: 17px;
+      stroke: #ffffff;
+      fill: none;
+      stroke-width: 2.25;
+      stroke-linecap: square;
+      stroke-linejoin: miter;
     }
 
     .btn-send:hover {
@@ -465,7 +474,11 @@
             <span style="color: var(--accent-terracotta);">✳</span>
             <span>GPT-6.1-Sol · Nostos (Core App)</span>
           </div>
-          <button class="btn-send">↑</button>
+          <button class="btn-send" aria-label="Send">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 4.5v15M5.5 11l6.5-6.5 6.5 6.5" />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
