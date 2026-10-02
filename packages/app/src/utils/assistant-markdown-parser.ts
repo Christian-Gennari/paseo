@@ -1,4 +1,5 @@
 import type MarkdownIt from "markdown-it";
+import { enableParenthesizedLinkCollapse } from "@/utils/collapse-parenthesized-links";
 import { createMarkdownParser } from "@/utils/markdown-parser";
 import { enableStreamingMarkdown } from "@/utils/streaming-markdown";
 
@@ -10,6 +11,8 @@ export function createAssistantMarkdownParser({ streaming = false } = {}): Markd
   // filesystem. Every other parser keeps markdown-it's stricter default.
   parser.validateLink = (url: string) =>
     url.trim().toLowerCase().startsWith("file://") || defaultValidateLink(url);
+
+  enableParenthesizedLinkCollapse(parser);
 
   if (streaming) {
     enableStreamingMarkdown(parser);

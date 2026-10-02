@@ -166,4 +166,56 @@ describe("createAssistantMarkdownParser", () => {
 
     expect(parser.render("[x](javascript:alert(1))")).not.toContain("href");
   });
+
+  it("folds a parenthesized URL into the reference it repeats", () => {
+    const parser = createAssistantMarkdownParser();
+    const url = "https://github.com/Christian-Gennari/Nostos/pull/672";
+
+    expect(
+      parser.renderInline(`The fix is merged into \`main\` as PR #672 (${url}), squash-merged.`),
+    ).toBe(
+      `The fix is merged into <code>main</code> as <a href="${url}">PR #672</a>, squash-merged.`,
+    );
+    expect(parser.renderInline(`#672 (${url})`)).toBe(`<a href="${url}">#672</a>`);
+    expect(parser.renderInline(`See issue #12 (<https://github.com/o/r/issues/12>).`)).toBe(
+      'See <a href="https://github.com/o/r/issues/12">issue #12</a>.',
+    );
+    expect(
+      parser.renderInline("Landed in abc1234 (https://github.com/o/r/commit/abc1234def)"),
+    ).toBe('Landed in <a href="https://github.com/o/r/commit/abc1234def">abc1234</a>');
+  });
+
+  it("folds a parenthesized URL into the formatted span before it", () => {
+    const parser = createAssistantMarkdownParser();
+
+    expect(parser.renderInline("Use `zod` (https://zod.dev) here")).toBe(
+      'Use <a href="https://zod.dev"><code>zod</code></a> here',
+    );
+    expect(parser.renderInline("**Zod *docs*** (https://zod.dev)")).toBe(
+      '<a href="https://zod.dev"><strong>Zod <em>docs</em></strong></a>',
+    );
+  });
+
+  it("folds parenthesized URLs while streaming and inside blocks", () => {
+    const parser = createAssistantMarkdownParser({ streaming: true });
+
+    expect(parser.render("- PR #3 (https://github.com/o/r/pull/3)")).toBe(
+      '<ul>\n<li><a href="https://github.com/o/r/pull/3">PR #3</a></li>\n</ul>\n',
+    );
+  });
+
+  it.each([
+    "see the docs (https://example.com) for more",
+    "PR #672 (https://github.com/o/r/pull/673)",
+    "PR #672 (see https://github.com/o/r/pull/672)",
+    "PR #672 (https://github.com/o/r/pull/672 and more)",
+    "PR #672 https://github.com/o/r/pull/672",
+    "[**docs**](https://a.example) (https://b.example)",
+    "`PR #1 (https://github.com/o/r/pull/1)`",
+  ])("keeps the URL when the label is ambiguous: %s", (source) => {
+    const plain = createAssistantMarkdownParser();
+    plain.core.ruler.disable("collapse_parenthesized_links");
+
+    expect(createAssistantMarkdownParser().renderInline(source)).toBe(plain.renderInline(source));
+  });
 });
