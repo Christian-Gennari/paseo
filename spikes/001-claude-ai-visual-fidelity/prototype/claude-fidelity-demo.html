@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Spike 001: Claude.ai Visual Fidelity Demo</title>
+  <title>Spike 001: Claude.ai Visual & Code Fidelity Demo</title>
   <style>
     @font-face {
       font-family: "Anthropic Sans";
@@ -36,7 +36,18 @@
       --border-focus: #d97757;
       --accent-terracotta: #d97757;
       --code-bg: #171716;
+      --code-header-bg: #22211f;
       --code-chip-bg: rgba(255, 255, 255, 0.08);
+
+      /* Restrained Claude Syntax Tokens */
+      --syn-keyword: #e07a5f;
+      --syn-string: #99c794;
+      --syn-func: #82aaff;
+      --syn-comment: #7c7975;
+      --syn-number: #f78c6c;
+      --syn-type: #e5c07b;
+      --syn-punct: #b0ada8;
+
       --font-ui: "Anthropic Sans", system-ui, -apple-system, sans-serif;
       --font-prose: "Anthropic Serif", Georgia, serif;
       --font-code: "Anthropic Mono", ui-monospace, monospace;
@@ -57,7 +68,6 @@
       overflow: hidden;
     }
 
-    /* Layout Shell */
     .sidebar {
       width: 260px;
       background-color: var(--bg-sidebar);
@@ -72,7 +82,6 @@
       font-size: 14px;
       font-weight: 600;
       color: var(--text-heading);
-      letter-spacing: -0.01em;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -98,11 +107,11 @@
       position: relative;
     }
 
-    /* Reading Column: 780px centered measure */
     .chat-scroll {
       flex: 1;
       overflow-y: auto;
       padding: 32px 16px 120px 16px;
+      scroll-behavior: smooth;
     }
 
     .chat-column {
@@ -113,7 +122,7 @@
       gap: 28px;
     }
 
-    /* User Message */
+    /* User Turn */
     .turn-user {
       align-self: flex-end;
       max-width: 80%;
@@ -147,7 +156,7 @@
       gap: 14px;
     }
 
-    /* Activity Deck (Tools & Thinking) */
+    /* Activity Deck */
     .activity-deck {
       display: inline-flex;
       align-items: center;
@@ -160,6 +169,11 @@
       color: var(--text-muted);
       width: fit-content;
       cursor: pointer;
+      user-select: none;
+    }
+
+    .activity-deck:hover {
+      background-color: #2c2a28;
     }
 
     .activity-deck .dot {
@@ -191,16 +205,6 @@
       margin-bottom: 14px;
     }
 
-    .prose ul {
-      margin-left: 20px;
-      margin-bottom: 14px;
-    }
-
-    .prose li {
-      margin-bottom: 6px;
-    }
-
-    /* Inline Code */
     .code-chip {
       font-family: var(--font-code);
       font-size: 13.5px;
@@ -211,7 +215,7 @@
       color: #f5f2eb;
     }
 
-    /* Code Block */
+    /* Code Block Chrome & Syntax Highlighting */
     .code-block {
       background-color: var(--code-bg);
       border: 1px solid var(--border-subtle);
@@ -221,23 +225,84 @@
     }
 
     .code-header {
-      background-color: #242321;
+      background-color: var(--code-header-bg);
       padding: 8px 14px;
       font-size: 12px;
       color: var(--text-muted);
       font-family: var(--font-ui);
       display: flex;
       justify-content: space-between;
+      align-items: center;
       border-bottom: 1px solid var(--border-subtle);
+      user-select: none;
+    }
+
+    .btn-copy {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-ui);
+      padding: 3px 6px;
+      border-radius: 4px;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .btn-copy:hover {
+      color: var(--text-heading);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-copy.copied {
+      color: #6cb17b;
     }
 
     .code-content {
       padding: 14px;
       font-family: var(--font-code);
-      font-size: 13px;
+      font-size: 13.5px;
       line-height: 1.5;
-      color: #f4f4f5;
+      color: #d4d1cb;
       overflow-x: auto;
+      white-space: pre;
+    }
+
+    /* Syntax Token Classes */
+    .kwd { color: var(--syn-keyword); font-weight: 500; }
+    .str { color: var(--syn-string); }
+    .fn  { color: var(--syn-func); }
+    .cmt { color: var(--syn-comment); font-style: italic; }
+    .num { color: var(--syn-number); }
+    .typ { color: var(--syn-type); }
+    .pct { color: var(--syn-punct); }
+
+    /* Floating Scroll Down Affordance */
+    .scroll-bottom-btn {
+      position: absolute;
+      bottom: 96px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: var(--bg-raised);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+
+    .scroll-bottom-btn:hover {
+      color: var(--text-heading);
+      transform: translateX(-50%) translateY(-2px);
     }
 
     /* Floating Composer */
@@ -322,11 +387,11 @@
   </div>
 
   <div class="main">
-    <div class="chat-scroll">
+    <div class="chat-scroll" id="chatScroll">
       <div class="chat-column">
         <!-- Turn 1: User -->
         <div class="turn-user">
-          <div class="user-bubble">How can we refactor the Nostos auth pipeline?</div>
+          <div class="user-bubble">Show me how we should handle auth token refresh in the client.</div>
           <div class="timestamp">22:45</div>
         </div>
 
@@ -334,42 +399,53 @@
         <div class="turn-assistant">
           <div class="activity-deck">
             <span class="dot"></span>
-            <span>Inspected <span class="code-chip">src/app/auth</span> (3 files) · Completed in 1.2s</span>
+            <span>Inspected <span class="code-chip">src/app/auth/auth.service.ts</span> (120 lines) · 0.8s</span>
           </div>
 
           <div class="prose">
-            <p>I examined the authentication service in <span class="code-chip">Nostos.Frontend/src/app/auth/</span>. We can isolate the BFF OIDC callback handling cleanly using an interceptor.</p>
+            <p>I inspected the existing authentication service. Below is the refactored token refresh interceptor using Angular's functional interceptor API.</p>
             
-            <h2>Proposed Architecture</h2>
-            <p>Here is what the streamlined flow will look like:</p>
-            <ul>
-              <li>Delegate session state refresh to the HTTP interceptor without freezing the UI thread.</li>
-              <li>Route token expiry events through <span class="code-chip">AuthSignalService</span>.</li>
-            </ul>
+            <h2>Token Refresh Interceptor</h2>
+            <p>The interceptor catches <span class="code-chip">401 Unauthorized</span> responses, schedules a refresh turn via the BFF gateway, and retries the in-flight request:</p>
 
             <div class="code-block">
               <div class="code-header">
-                <span>auth-interceptor.ts</span>
-                <span>Copy</span>
+                <span>typescript</span>
+                <button class="btn-copy" onclick="copySnippet(this)">
+                  <span class="copy-icon">⎘</span>
+                  <span class="copy-text">Copy</span>
+                </button>
               </div>
-              <pre class="code-content">export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  return next(req).pipe(
-    catchError((err) => {
-      if (err.status === 401) {
-        auth.handleSessionExpired();
-      }
-      return throwError(() => err);
-    })
-  );
-};</pre>
+              <pre class="code-content"><span class="cmt">// Functional HTTP interceptor for token renewal</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="typ">HttpInterceptorFn</span><span class="pct">,</span> <span class="typ">HttpErrorResponse</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'@angular/common/http'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="fn">inject</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'@angular/core'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="typ">AuthService</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'./auth.service'</span><span class="pct">;</span>
+<span class="kwd">import</span> <span class="pct">{</span> <span class="fn">catchError</span><span class="pct">,</span> <span class="fn">switchMap</span><span class="pct">,</span> <span class="fn">throwError</span> <span class="pct">}</span> <span class="kwd">from</span> <span class="str">'rxjs'</span><span class="pct">;</span>
+
+<span class="kwd">export</span> <span class="kwd">const</span> <span class="fn">authInterceptor</span><span class="pct">:</span> <span class="typ">HttpInterceptorFn</span> <span class="pct">=</span> <span class="pct">(</span><span class="kwd">req</span><span class="pct">,</span> <span class="kwd">next</span><span class="pct">)</span> <span class="kwd">=&gt;</span> <span class="pct">{</span>
+  <span class="kwd">const</span> authService <span class="pct">=</span> <span class="fn">inject</span><span class="pct">(</span><span class="typ">AuthService</span><span class="pct">);</span>
+
+  <span class="kwd">return</span> <span class="kwd">next</span><span class="pct">(</span>req<span class="pct">).</span><span class="fn">pipe</span><span class="pct">(</span>
+    <span class="fn">catchError</span><span class="pct">((</span>err<span class="pct">:</span> <span class="typ">HttpErrorResponse</span><span class="pct">)</span> <span class="kwd">=&gt;</span> <span class="pct">{</span>
+      <span class="kwd">if</span> <span class="pct">(</span>err<span class="pct">.</span>status <span class="pct">===</span> <span class="num">401</span><span class="pct">)</span> <span class="pct">{</span>
+        <span class="kwd">return</span> authService<span class="pct">.</span><span class="fn">refreshToken</span><span class="pct">().</span><span class="fn">pipe</span><span class="pct">(</span>
+          <span class="fn">switchMap</span><span class="pct">(()</span> <span class="kwd">=&gt;</span> <span class="kwd">next</span><span class="pct">(</span>req<span class="pct">))</span>
+        <span class="pct">);</span>
+      <span class="pct">}</span>
+      <span class="kwd">return</span> <span class="fn">throwError</span><span class="pct">(()</span> <span class="kwd">=&gt;</span> err<span class="pct">);</span>
+    <span class="pct">})</span>
+  <span class="pct">);</span>
+<span class="pct">};</span></pre>
             </div>
 
-            <p>Let me know if you would like me to apply this refactoring to the repository branch.</p>
+            <p>Notice how the keywords, types, and strings contrast softly against the dark background without eye strain.</p>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Scroll down button -->
+    <div class="scroll-bottom-btn" onclick="scrollToBottom()">↓</div>
 
     <!-- Floating Composer -->
     <div class="composer-wrapper">
@@ -385,5 +461,28 @@
       </div>
     </div>
   </div>
+
+  <script>
+    function copySnippet(button) {
+      const code = button.closest('.code-block').querySelector('.code-content').innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        const textSpan = button.querySelector('.copy-text');
+        const iconSpan = button.querySelector('.copy-icon');
+        textSpan.innerText = 'Copied';
+        iconSpan.innerText = '✓';
+        button.classList.add('copied');
+        setTimeout(() => {
+          textSpan.innerText = 'Copy';
+          iconSpan.innerText = '⎘';
+          button.classList.remove('copied');
+        }, 1500);
+      });
+    }
+
+    function scrollToBottom() {
+      const el = document.getElementById('chatScroll');
+      el.scrollTop = el.scrollHeight;
+    }
+  </script>
 </body>
 </html>
