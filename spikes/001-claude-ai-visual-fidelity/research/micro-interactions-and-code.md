@@ -12,19 +12,20 @@ In consumer IDEs (VS Code, JetBrains), syntax highlighters use highly saturated,
 
 ### Claude Dark Syntax Token Palette (Warm-Stone Mapped)
 
-| Syntax Token | Traditional IDE (GitHub Dark) | Claude.ai Restrained Palette | Rationale |
-|---|---|---|---|
-| **Background** | `#0d1117` | `#171716` / `#191817` | Aligns seamlessly with warm-stone surface scale |
-| **Base / Punctuation** | `#c9d1d9` | `#d4d1cb` | Warm off-white, legible without glare |
-| **Keyword** | `#ff7b72` (Harsh Pink/Red) | `#e07a5f` / `#cf8e6d` | Soft terracotta / clay tone |
-| **String / Literal** | `#a5d6ff` (Bright Blue) | `#99c794` / `#8abeb7` | Muted sage / olive green |
-| **Function / Method** | `#d2a8ff` (Neon Purple) | `#82aaff` / `#7ca5b8` | Soft steel blue |
-| **Comment** | `#8b949e` (Cold Gray) | `#7c7975` | Warm earthy gray (passing 4.5:1 contrast on `#171716`) |
-| **Number / Constant** | `#79c0ff` | `#f78c6c` | Soft coral |
-| **Type / Class** | `#ffa657` | `#e5c07b` | Muted gold / ochre |
-| **Operator** | `#79c0ff` | `#b0ada8` | Muted neutral, not loud blue |
+| Syntax Token           | Traditional IDE (GitHub Dark) | Claude.ai Restrained Palette | Rationale                                              |
+| ---------------------- | ----------------------------- | ---------------------------- | ------------------------------------------------------ |
+| **Background**         | `#0d1117`                     | `#171716` / `#191817`        | Aligns seamlessly with warm-stone surface scale        |
+| **Base / Punctuation** | `#c9d1d9`                     | `#d4d1cb`                    | Warm off-white, legible without glare                  |
+| **Keyword**            | `#ff7b72` (Harsh Pink/Red)    | `#e07a5f` / `#cf8e6d`        | Soft terracotta / clay tone                            |
+| **String / Literal**   | `#a5d6ff` (Bright Blue)       | `#99c794` / `#8abeb7`        | Muted sage / olive green                               |
+| **Function / Method**  | `#d2a8ff` (Neon Purple)       | `#82aaff` / `#7ca5b8`        | Soft steel blue                                        |
+| **Comment**            | `#8b949e` (Cold Gray)         | `#7c7975`                    | Warm earthy gray (passing 4.5:1 contrast on `#171716`) |
+| **Number / Constant**  | `#79c0ff`                     | `#f78c6c`                    | Soft coral                                             |
+| **Type / Class**       | `#ffa657`                     | `#e5c07b`                    | Muted gold / ochre                                     |
+| **Operator**           | `#79c0ff`                     | `#b0ada8`                    | Muted neutral, not loud blue                           |
 
 ### Highlighting Invariants:
+
 1. **Explicit Language Mapping**: Unlabeled or unknown code fences fall back gracefully to neutral plain text (`#d4d1cb`) rather than guessing wrong languages.
 2. **Whitespace Preservation & Horizontal Overflow**: Code scrolls horizontally inside the fence body (`overflow-x: auto`) rather than stretching the chat column or wrapping commands awkwardly.
 3. **Copy Source String**: Always copy the raw code string without trailing newlines or highlighted DOM tags.
@@ -48,6 +49,7 @@ In consumer IDEs (VS Code, JetBrains), syntax highlighters use highly saturated,
 ## 3. Streaming Text Smoothing (Physics, Not Typing Animations)
 
 Claude's text stream feels noticeably smoother than OpenAI or standard ChatGPT interfaces:
+
 - **No Character-by-Character Delays**: Claude does **not** artificially slow down output to simulate human typing.
 - **Frame-Coalesced Rendering**: Incoming token chunks are batched and committed once per animation frame (`requestAnimationFrame`), eliminating layout thrashing and choppy jumps.
 - **Stable Block Boundaries**: Markdown blocks maintain stable React keys to avoid re-rendering entire lists or code blocks as each token arrives.

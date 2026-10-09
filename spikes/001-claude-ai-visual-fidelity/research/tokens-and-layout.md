@@ -10,18 +10,18 @@
 
 Claude.ai avoids standard cold monochromatic gray or OLED pure-black. Instead, it is built on an earthy warm-stone scale (Stone / Clay undertones) with low-saturation surfaces and a signature terracotta accent.
 
-| Token Role | Claude.ai Hex | Purpose / Placement | Paseo `claudeDark` Equivalent |
-|---|---|---|---|
-| **App Canvas / Page BG** | `#1e1e1e` / `#1f1f1e` | Base viewport background | `theme.colors.surface0` (`#1f1f1e`) |
-| **Sidebar / Rail BG** | `#181817` / `#1a1918` | Darker, receded navigation surface | `theme.colors.surfaceSidebar` (`#1a1918`) |
-| **Raised Card / Sheet** | `#262523` | Floating composer, modals, dropdowns | `theme.colors.surface1` (`#262523`) |
-| **User Message Bubble** | `#2b2b2b` / `#2f2d2b` | Softly contrasting user speech card | `theme.colors.surface2` (`#2f2d2b`) |
-| **Hover / Highlight Surface** | `#383532` | Interactive element hover | `theme.colors.surface3` (`#4a4745`) |
-| **Primary Text (Prose)** | `#e5e3de` | Off-white, soft paper-like reading tone | `theme.colors.foreground` (`#fafafa` -> `#e5e3de`) |
-| **Muted Text (Meta)** | `#ada9a5` | Timestamps, status pills, model names | `theme.colors.foregroundMuted` (`#ada9a5`) |
-| **Hairline Borders** | `#36332f` / `#2c2a27` | Subtle card outlines, divider lines | `theme.colors.border` (`#2c2a27`) |
-| **Terracotta Accent** | `#d97757` / `#cc785c` | Send button, focus ring, active highlights | `theme.colors.accent` (`#d97757`) |
-| **Terracotta Glow** | `rgba(217, 119, 87, 0.18)` | Input focus glow / selection highlight | Custom focus ring box-shadow |
+| Token Role                    | Claude.ai Hex              | Purpose / Placement                        | Paseo `claudeDark` Equivalent                      |
+| ----------------------------- | -------------------------- | ------------------------------------------ | -------------------------------------------------- |
+| **App Canvas / Page BG**      | `#1e1e1e` / `#1f1f1e`      | Base viewport background                   | `theme.colors.surface0` (`#1f1f1e`)                |
+| **Sidebar / Rail BG**         | `#181817` / `#1a1918`      | Darker, receded navigation surface         | `theme.colors.surfaceSidebar` (`#1a1918`)          |
+| **Raised Card / Sheet**       | `#262523`                  | Floating composer, modals, dropdowns       | `theme.colors.surface1` (`#262523`)                |
+| **User Message Bubble**       | `#2b2b2b` / `#2f2d2b`      | Softly contrasting user speech card        | `theme.colors.surface2` (`#2f2d2b`)                |
+| **Hover / Highlight Surface** | `#383532`                  | Interactive element hover                  | `theme.colors.surface3` (`#4a4745`)                |
+| **Primary Text (Prose)**      | `#e5e3de`                  | Off-white, soft paper-like reading tone    | `theme.colors.foreground` (`#fafafa` -> `#e5e3de`) |
+| **Muted Text (Meta)**         | `#ada9a5`                  | Timestamps, status pills, model names      | `theme.colors.foregroundMuted` (`#ada9a5`)         |
+| **Hairline Borders**          | `#36332f` / `#2c2a27`      | Subtle card outlines, divider lines        | `theme.colors.border` (`#2c2a27`)                  |
+| **Terracotta Accent**         | `#d97757` / `#cc785c`      | Send button, focus ring, active highlights | `theme.colors.accent` (`#d97757`)                  |
+| **Terracotta Glow**           | `rgba(217, 119, 87, 0.18)` | Input focus glow / selection highlight     | Custom focus ring box-shadow                       |
 
 ---
 
@@ -63,6 +63,7 @@ Claude's identity is defined by a deliberate pairing:
 ## 4. Agent Tool & Thinking Activity Deck
 
 In contrast to raw developer logs, Claude presents tool execution as quiet, collapsible rows:
+
 - Left-aligned icon + concise verb/noun (`Searching web...`, `Reading file.ts`).
 - Small spinner during execution.
 - Collapse/expand chevron to audit raw tool payloads.
