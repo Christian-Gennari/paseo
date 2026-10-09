@@ -1,9 +1,7 @@
-import { copyFile, mkdir } from "node:fs/promises";
+import { copyFile, mkdir, stat } from "node:fs/promises";
 import path from "node:path";
 
 import type { Logger } from "pino";
-
-import { isStructurallyValidOnnxFile } from "./onnx-file-check.js";
 
 import type {
   TurnDetectionProvider,
@@ -27,8 +25,12 @@ export async function ensureSileroVadModel(modelsDir: string, logger: Logger): P
   const destDir = path.join(modelsDir, SILERO_VAD_DIR);
   const destPath = path.join(destDir, SILERO_VAD_FILE);
 
-  // A missing or corrupt copy is replaced from the bundled asset.
-  if (await isStructurallyValidOnnxFile(destPath)) return destPath;
+  try {
+    const s = await stat(destPath);
+    if (s.isFile() && s.size > 0) return destPath;
+  } catch {
+    // not present yet
+  }
 
   const bundledPath = resolveBundledSileroVadModelPath();
   await mkdir(destDir, { recursive: true });

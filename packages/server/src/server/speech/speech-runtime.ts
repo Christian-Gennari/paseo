@@ -1,15 +1,9 @@
-import { join } from "node:path";
 import type { Logger } from "pino";
 
 import type { PaseoOpenAIConfig, PaseoSpeechConfig } from "../bootstrap.js";
 import type { LocalSpeechModelId } from "./providers/local/config.js";
-import {
-  ensureLocalSpeechModels,
-  getLocalSpeechModelDir,
-  listLocalSpeechModels,
-} from "./providers/local/models.js";
+import { ensureLocalSpeechModels, listMissingLocalSpeechModels } from "./providers/local/models.js";
 import { initializeLocalSpeechServices } from "./providers/local/runtime.js";
-import { isUsableLocalModelFile } from "./providers/local/sherpa/onnx-file-check.js";
 import {
   getOpenAiSpeechAvailability,
   initializeOpenAiSpeechServices,
@@ -74,36 +68,6 @@ function resolveRequestedSpeechProviders(
     voiceStt: fromConfig.voiceStt ?? defaults.voiceStt,
     voiceTts: fromConfig.voiceTts ?? defaults.voiceTts,
   };
-}
-
-async function findMissingRequiredLocalModels(params: {
-  modelsDir: string | null;
-  requiredModelIds: LocalSpeechModelId[];
-}): Promise<LocalSpeechModelId[]> {
-  const { modelsDir, requiredModelIds } = params;
-  if (!modelsDir || requiredModelIds.length === 0) {
-    return [];
-  }
-
-  const specsById = new Map(listLocalSpeechModels().map((model) => [model.id, model]));
-  const missing = new Set<LocalSpeechModelId>();
-
-  const checks = await Promise.all(
-    requiredModelIds.map(async (modelId) => {
-      const spec = specsById.get(modelId);
-      if (!spec) return { modelId, missing: true };
-      const modelDir = getLocalSpeechModelDir(modelsDir, modelId);
-      const filePresence = await Promise.all(
-        spec.requiredFiles.map((relPath) => isUsableLocalModelFile(join(modelDir, relPath))),
-      );
-      return { modelId, missing: !filePresence.every((present) => present) };
-    }),
-  );
-  for (const check of checks) {
-    if (check.missing) missing.add(check.modelId);
-  }
-
-  return Array.from(missing);
 }
 
 function joinModelIds(modelIds: LocalSpeechModelId[]): string {
@@ -481,10 +445,12 @@ export function createSpeechService(params: {
   };
 
   const refreshMissingLocalModels = async (): Promise<void> => {
-    missingLocalModelIds = await findMissingRequiredLocalModels({
-      modelsDir: localModelConfig?.modelsDir ?? null,
-      requiredModelIds: localModelConfig?.defaultModelIds ?? [],
-    });
+    missingLocalModelIds = localModelConfig
+      ? await listMissingLocalSpeechModels({
+          modelsDir: localModelConfig.modelsDir,
+          modelIds: localModelConfig.defaultModelIds,
+        })
+      : [];
   };
 
   const reconcileServices = async (): Promise<void> => {

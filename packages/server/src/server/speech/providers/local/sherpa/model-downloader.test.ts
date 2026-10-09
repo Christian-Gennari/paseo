@@ -1,11 +1,21 @@
 import { describe, expect, test } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  mkdtempSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  rmSync,
+  existsSync,
+  truncateSync,
+  readdirSync,
+} from "node:fs";
+import { execFileSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import pino from "pino";
 
 import { ensureSherpaOnnxModel, getSherpaOnnxModelDir } from "./model-downloader.js";
-import { isStructurallyValidOnnxFile } from "./onnx-file-check.js";
+import { getSherpaOnnxModelSpec } from "./model-catalog.js";
 
 function makeTmpDir(): string {
   return mkdtempSync(path.join(tmpdir(), "paseo-speech-models-"));
@@ -13,12 +23,68 @@ function makeTmpDir(): string {
 
 const logger = pino({ level: "silent" });
 
-// ModelProto { ir_version: 7 }
-const MINIMAL_ONNX = Buffer.from([0x08, 0x07]);
-// ir_version, then a `graph` field declaring 16 bytes with only 2 present.
-const TRUNCATED_ONNX = Buffer.from([0x08, 0x07, 0x3a, 0x10, 0x01, 0x02]);
-
 describe("sherpa model downloader", () => {
+  test("does not expose a partial model when tar extraction fails", async () => {
+    const root = makeTmpDir();
+    const modelsDir = path.join(root, "models");
+    const spec = getSherpaOnnxModelSpec("kokoro-en-v0_19");
+    const sourceDir = path.join(root, "source", spec.extractedDir);
+    const archive = path.join(
+      modelsDir,
+      ".downloads",
+      path.basename(new URL(spec.archiveUrl).pathname),
+    );
+    try {
+      mkdirSync(sourceDir, { recursive: true });
+      mkdirSync(path.dirname(archive), { recursive: true });
+      writeFileSync(path.join(sourceDir, "model.onnx"), Buffer.alloc(32_768, 1));
+      execFileSync("tar", [
+        "cf",
+        archive,
+        "-C",
+        path.dirname(sourceDir),
+        `${spec.extractedDir}/model.onnx`,
+      ]);
+      truncateSync(archive, 1_024);
+      await expect(ensureSherpaOnnxModel({ modelsDir, modelId: spec.id, logger })).rejects.toThrow(
+        "tar exited",
+      );
+      expect(existsSync(getSherpaOnnxModelDir(modelsDir, spec.id))).toBe(false);
+      expect(existsSync(archive)).toBe(true);
+      expect(readdirSync(modelsDir)).toEqual([".downloads"]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("repairs a partial legacy extraction when its cached archive remains", async () => {
+    const root = makeTmpDir();
+    const modelsDir = path.join(root, "models");
+    const spec = getSherpaOnnxModelSpec("kokoro-en-v0_19");
+    const sourceDir = path.join(root, "source", spec.extractedDir);
+    const modelDir = getSherpaOnnxModelDir(modelsDir, spec.id);
+    const archive = path.join(
+      modelsDir,
+      ".downloads",
+      path.basename(new URL(spec.archiveUrl).pathname),
+    );
+    try {
+      for (const dir of [sourceDir, modelDir]) {
+        mkdirSync(path.join(dir, "espeak-ng-data"), { recursive: true });
+        for (const filename of ["model.onnx", "voices.bin", "tokens.txt"]) {
+          writeFileSync(path.join(dir, filename), "complete model data");
+        }
+      }
+      mkdirSync(path.dirname(archive), { recursive: true });
+      execFileSync("tar", ["cf", archive, "-C", path.dirname(sourceDir), spec.extractedDir]);
+      writeFileSync(path.join(modelDir, "model.onnx"), "truncated");
+      await ensureSherpaOnnxModel({ modelsDir, modelId: spec.id, logger });
+      expect(readFileSync(path.join(modelDir, "model.onnx"), "utf8")).toBe("complete model data");
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   test("getSherpaOnnxModelDir maps modelId to extractedDir", () => {
     const modelsDir = "/tmp/models";
     expect(getSherpaOnnxModelDir(modelsDir, "parakeet-tdt-0.6b-v2-int8")).toContain(
@@ -32,7 +98,7 @@ describe("sherpa model downloader", () => {
     const modelDir = getSherpaOnnxModelDir(modelsDir, "kokoro-en-v0_19");
 
     mkdirSync(path.join(modelDir, "espeak-ng-data"), { recursive: true });
-    writeFileSync(path.join(modelDir, "model.onnx"), MINIMAL_ONNX);
+    writeFileSync(path.join(modelDir, "model.onnx"), "x");
     writeFileSync(path.join(modelDir, "voices.bin"), "x");
     writeFileSync(path.join(modelDir, "tokens.txt"), "x");
 
@@ -43,54 +109,5 @@ describe("sherpa model downloader", () => {
     });
 
     expect(out).toBe(modelDir);
-  });
-
-  test("ensureSherpaOnnxModel treats a truncated onnx file as missing", async () => {
-    const modelsDir = makeTmpDir();
-    const modelDir = getSherpaOnnxModelDir(modelsDir, "kokoro-en-v0_19");
-
-    mkdirSync(path.join(modelDir, "espeak-ng-data"), { recursive: true });
-    writeFileSync(path.join(modelDir, "model.onnx"), TRUNCATED_ONNX);
-    writeFileSync(path.join(modelDir, "voices.bin"), "x");
-    writeFileSync(path.join(modelDir, "tokens.txt"), "x");
-
-    const controller = new AbortController();
-    controller.abort();
-
-    // Falling through to the download is what proves the file was rejected; the
-    // pre-aborted signal stops it before any network request.
-    await expect(
-      ensureSherpaOnnxModel({
-        modelsDir,
-        modelId: "kokoro-en-v0_19",
-        logger,
-        signal: controller.signal,
-      }),
-    ).rejects.toThrow();
-  });
-});
-
-describe("isStructurallyValidOnnxFile", () => {
-  function writeTmpFile(content: Buffer | string): string {
-    const filePath = path.join(makeTmpDir(), "model.onnx");
-    writeFileSync(filePath, content);
-    return filePath;
-  }
-
-  test("accepts a complete protobuf message", async () => {
-    expect(await isStructurallyValidOnnxFile(writeTmpFile(MINIMAL_ONNX))).toBe(true);
-  });
-
-  test("rejects a truncated message", async () => {
-    expect(await isStructurallyValidOnnxFile(writeTmpFile(TRUNCATED_ONNX))).toBe(false);
-  });
-
-  test("rejects non-model content", async () => {
-    expect(await isStructurallyValidOnnxFile(writeTmpFile("<html>Not Found</html>"))).toBe(false);
-  });
-
-  test("rejects empty and missing files", async () => {
-    expect(await isStructurallyValidOnnxFile(writeTmpFile(""))).toBe(false);
-    expect(await isStructurallyValidOnnxFile(path.join(makeTmpDir(), "absent.onnx"))).toBe(false);
   });
 });
