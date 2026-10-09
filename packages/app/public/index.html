@@ -39,6 +39,40 @@
         font-display: swap;
       }
     </style>
+    <style id="claude-ref-pill">
+      /* PR / issue reference pills (components/markdown/reference-badge-view.tsx) */
+      a.claude-ref-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 1px 6px;
+        margin: 0 2px;
+        border-radius: 6px;
+        background-color: rgba(88, 166, 255, 0.15);
+        color: var(--accent, #58a6ff);
+        font-size: 0.9em;
+        font-weight: 500;
+        line-height: 1.5;
+        text-decoration: none;
+        vertical-align: baseline;
+        cursor: pointer;
+        transition: background-color 0.12s ease;
+      }
+      a.claude-ref-pill:hover {
+        background-color: rgba(88, 166, 255, 0.25);
+        text-decoration: none;
+      }
+      a.claude-ref-pill .claude-ref-icon {
+        display: inline-flex;
+        align-items: center;
+      }
+      a.claude-ref-pill .claude-ref-icon svg {
+        stroke: currentColor;
+      }
+      a.claude-ref-pill .claude-ref-text {
+        color: inherit;
+      }
+    </style>
     <style id="expo-reset">
       /* Keep the app shell fixed to the viewport. */
       html,
