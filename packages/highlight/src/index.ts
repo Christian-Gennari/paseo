@@ -10,7 +10,6 @@ export { highlightCode, highlightLine } from "./highlighter.js";
 export { darkHighlightColors, lightHighlightColors } from "./colors.js";
 export type { SyntaxThemeId, SyntaxThemeOption, SyntaxColors } from "./themes.js";
 export {
-  claudeDarkHighlightColors,
   SYNTAX_THEME_IDS,
   SYNTAX_THEME_OPTIONS,
   isSyntaxThemeId,

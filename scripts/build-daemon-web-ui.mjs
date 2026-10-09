@@ -51,6 +51,12 @@ async function cleanTarget() {
 async function copyAssets() {
   console.log(`Copying assets to ${path.relative(REPO_ROOT, TARGET_DIST)}...`);
   await cp(SOURCE_DIST, TARGET_DIST, { recursive: true, force: true });
+  // Ensure custom static fonts from packages/app/public/fonts are copied if present
+  const appFontsDir = path.join(APP_DIR, "public", "fonts");
+  const targetFontsDir = path.join(TARGET_DIST, "fonts");
+  try {
+    await cp(appFontsDir, targetFontsDir, { recursive: true, force: true });
+  } catch {}
 }
 
 async function compressFile(filePath) {

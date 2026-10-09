@@ -1,9 +1,5 @@
 import { Platform } from "react-native";
-import {
-  claudeDarkHighlightColors,
-  darkHighlightColors,
-  lightHighlightColors,
-} from "@getpaseo/highlight";
+import { darkHighlightColors, lightHighlightColors } from "@getpaseo/highlight";
 
 export const baseColors = {
   // Base colors
@@ -738,16 +734,13 @@ const darkShadow = {
   },
 } as const;
 
-export function buildDarkTheme(
-  semanticColors: ReturnType<typeof buildDarkSemanticColors>,
-  syntaxColors = darkHighlightColors,
-) {
+export function buildDarkTheme(semanticColors: ReturnType<typeof buildDarkSemanticColors>) {
   return {
     colorScheme: "dark" as const,
     colors: {
       ...semanticColors,
       palette: baseColors,
-      syntax: syntaxColors,
+      syntax: darkHighlightColors,
     },
     shadow: darkShadow,
     ...commonTheme,
@@ -757,7 +750,7 @@ export function buildDarkTheme(
 export const darkTheme = buildDarkTheme(paseoDarkColors);
 export const darkZincTheme = buildDarkTheme(zincDarkColors);
 export const darkMidnightTheme = buildDarkTheme(midnightDarkColors);
-export const darkClaudeTheme = buildDarkTheme(claudeDarkColors, claudeDarkHighlightColors);
+export const darkClaudeTheme = buildDarkTheme(claudeDarkColors);
 export const darkGhosttyTheme = buildDarkTheme(ghosttyDarkColors);
 
 // Pure black — zero-luminance background with high-contrast surfaces.
